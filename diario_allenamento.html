@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mattia Guareschi — Diario Allenamento</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#14151A; --card:#1E2025; --card-border:#2A2C33;
+    --text:#EDEAE2; --text-dim:#9296A0;
+    --gold:#D9A94C; --teal:#4FA694; --rust:#C9713D; --field:#26282E;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;padding:0 0 70px;}
+  .wrap{max-width:640px;margin:0 auto;padding:0 18px;}
+
+  header{padding:32px 18px 18px;text-align:center;border-bottom:1px solid var(--card-border);}
+  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);margin:0 0 8px;}
+  h1{font-family:'Oswald',sans-serif;font-weight:700;font-size:26px;margin:0 0 4px;text-transform:uppercase;}
+  .sub{color:var(--text-dim);font-size:13px;margin:0 0 16px;}
+
+  /* WEEK SELECTOR */
+  .weeks{display:flex;gap:6px;overflow-x:auto;padding:2px 18px 6px;justify-content:center;flex-wrap:wrap;}
+  .wchip{
+    font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;
+    padding:7px 11px;border-radius:20px;border:1px solid var(--card-border);
+    background:transparent;color:var(--text-dim);cursor:pointer;flex:none;
+  }
+  .wchip.active{background:var(--gold);color:#14151A;border-color:var(--gold);}
+  .wchip.tag-test{color:var(--rust);}
+  .wchip.tag-test.active{background:var(--rust);color:#14151A;border-color:var(--rust);}
+
+  .week-info{text-align:center;margin:10px 0 0;}
+  .week-badge{
+    display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:11.5px;
+    padding:5px 12px;border-radius:20px;margin-top:4px;
+  }
+  .week-badge.scarico{color:var(--rust);border:1px solid rgba(201,113,61,.4);background:rgba(201,113,61,.08);}
+  .week-badge.test{color:#e05252;border:1px solid rgba(224,82,82,.4);background:rgba(224,82,82,.08);}
+  .week-badge.normal{color:var(--text-dim);border:1px solid var(--card-border);}
+
+  /* DAY */
+  .day{margin:26px 0;}
+  .day-head{display:flex;align-items:center;gap:14px;margin-bottom:12px;}
+  .plate{
+    width:44px;height:44px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;
+    background:radial-gradient(circle at 35% 30%, #3a3c43, #202227 70%);
+    border:2px solid #3a3c43;box-shadow:inset 0 0 0 3px #14151A, inset 0 0 0 4px #34363d;
+    font-family:'Oswald',sans-serif;font-weight:600;font-size:13px;color:var(--gold);
+  }
+  .plate.cardio{color:var(--teal);}
+  .day-titles{flex:1;}
+  .day-name{font-family:'Oswald',sans-serif;font-size:18px;font-weight:600;text-transform:uppercase;}
+  .day-meta{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-dim);margin-top:2px;}
+
+  .card{background:var(--card);border:1px solid var(--card-border);border-radius:14px;overflow:hidden;}
+  .ex{padding:14px 16px;border-bottom:1px solid var(--card-border);}
+  .ex:last-child{border-bottom:none;}
+  .ex-name{font-weight:600;font-size:15px;margin:0 0 2px;}
+  .ex-note{font-size:12px;color:var(--text-dim);margin:0 0 8px;}
+  .ex-scheme{
+    font-family:'IBM Plex Mono',monospace;font-size:13.5px;font-weight:600;color:var(--gold);
+    white-space:pre-line;line-height:1.5;background:rgba(217,169,76,.06);
+    border:1px solid rgba(217,169,76,.18);border-radius:8px;padding:8px 10px;margin-bottom:10px;
+  }
+  .ex-scheme.empty{color:var(--text-dim);font-weight:500;font-style:italic;background:transparent;border-style:dashed;}
+  .ex-tags{display:flex;gap:6px;margin-bottom:10px;}
+  .tag{font-family:'IBM Plex Mono',monospace;font-size:10.5px;padding:3px 8px;border-radius:20px;background:rgba(79,166,148,.1);color:var(--teal);border:1px solid rgba(79,166,148,.25);}
+
+  .log-row{display:flex;gap:6px;margin-bottom:6px;}
+  .log-row input{
+    flex:1;min-width:0;background:var(--field);border:1px solid var(--card-border);
+    border-radius:8px;padding:8px 9px;color:var(--text);font-size:13px;font-family:'Inter',sans-serif;
+  }
+  .log-row input::placeholder{color:#5c5e66;}
+  .log-note{width:100%;background:var(--field);border:1px solid var(--card-border);border-radius:8px;
+    padding:8px 9px;color:var(--text);font-size:13px;font-family:'Inter',sans-serif;margin-bottom:8px;}
+  .save-btn{
+    font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;letter-spacing:.02em;
+    background:var(--teal);color:#0e1512;border:none;border-radius:8px;padding:8px 14px;cursor:pointer;
+  }
+  .save-btn:active{opacity:.8;}
+
+  details.hist{margin-top:10px;}
+  details.hist summary{
+    cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--text-dim);
+    list-style:none;
+  }
+  details.hist summary::-webkit-details-marker{display:none;}
+  details.hist summary::before{content:'▸ ';}
+  details.hist[open] summary::before{content:'▾ ';}
+  .hist-list{margin-top:8px;display:flex;flex-direction:column;gap:6px;}
+  .hist-item{
+    display:flex;justify-content:space-between;align-items:flex-start;gap:8px;
+    background:var(--field);border-radius:8px;padding:7px 9px;font-size:12px;
+  }
+  .hist-main{color:var(--text);}
+  .hist-date{color:var(--text-dim);font-family:'IBM Plex Mono',monospace;font-size:10.5px;display:block;margin-bottom:2px;}
+  .hist-del{background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:14px;line-height:1;padding:2px 4px;flex:none;}
+  .hist-empty{color:var(--text-dim);font-size:12px;font-style:italic;margin-top:8px;}
+
+  .note-box{background:var(--card);border:1px solid var(--card-border);border-radius:14px;padding:16px 18px;margin-top:30px;font-size:13px;color:var(--text-dim);line-height:1.6;}
+  .note-box b{color:var(--text);}
+  footer{text-align:center;color:var(--text-dim);font-size:11px;margin-top:24px;font-family:'IBM Plex Mono',monospace;}
+</style>
+</head>
+<body>
+
+<header>
+  <p class="eyebrow">Mesociclo 2 · Mattia Guareschi</p>
+  <h1>Diario Allenamento</h1>
+  <p class="sub" id="dateRange">—</p>
+  <div class="weeks" id="weekSelector"></div>
+  <div class="week-info"><span class="week-badge" id="weekBadge"></span></div>
+</header>
+
+<div class="wrap" id="days"></div>
+
+<div class="wrap">
+  <div class="note-box">
+    <b>RIR0</b> su accessori e compound in tutte le settimane: quando serve, dai priorità alla tecnica piuttosto che spingere sul RIR.<br><br>
+    I dati che registri (carico, rep, note) restano salvati su questo dispositivo e restano visibili settimana dopo settimana per ogni esercizio — così puoi vedere i tuoi progressi nel tempo.
+  </div>
+  <footer>P5, P6 e C2–C6 non programmati in questo mesociclo</footer>
+</div>
+
+<script>
+const PROGRAM = {"P1": {"title": "Giorno 1", "exercises": [{"id": "p1-1", "name": "Stacco", "note": "Massimale attuale: 110 kg", "rest": null, "weekly": {"7": "4×4 @ 72,5%\nPausa 2” appena staccato da terra", "8": "5×3 @ 77,5%\nTempo 3” fino al ginocchio", "9": "4×3 @ 75%\nDeficit 3 cm + fermo 1” a metà tibia", "10": "5×2 @ 82,5%\nStacco normale", "11": "4×4 @ 70%\nPausa 2” sotto il ginocchio", "12": "6×2 @ 85%", "13": "3×3 @ 72,5%\nTecnica pulita\nFermo 2” a metà tibia"}}, {"id": "p1-2", "name": "Panca 45 Bilanciere", "note": null, "rest": null, "weekly": {"7": "3 × 7–9", "8": "3 × 7–9", "9": "3 × 7–9", "10": "3 × 7–9", "11": "3 × 7–9", "12": "3 × 7–9", "13": "3 × 7–9"}}, {"id": "p1-3", "name": "Trazioni Supine", "note": null, "rest": null, "weekly": {"7": "1 ramping 3 + 3×8", "8": "1 ramping 2+ 2×10", "9": "ladder 1-2-3-4-5-6-7", "10": "1 AMRAP", "11": "1 AMRAP + 2×8", "12": "MAX REP finale", "13": null}}, {"id": "p1-4", "name": "Curl Bilanciere EZ", "note": null, "rest": "45''", "weekly": {"7": "3 × 7–9", "8": "3 × 7–9", "9": "3 × 7–9", "10": "3 × 7–9", "11": "3 × 7–9", "12": "3 × 7–9", "13": "3 × 7–9"}}]}, "P2": {"title": "Giorno 2", "exercises": [{"id": "p2-1", "name": "Adduzioni Scapolari", "note": null, "rest": null, "weekly": {"7": "3 × 10", "8": "3 × 10", "9": "3 × 10", "10": "3 × 10", "11": "3 × 10", "12": "3 × 10", "13": "3 × 10"}}, {"id": "p2-2", "name": "Squat Bilanciere", "note": "Massimale attuale: 95 kg", "rest": null, "weekly": {"7": "Squat con fermo in buca 2’’\n5×4×72,5%", "8": "Squat eccentrica 4’’\n4×4×75%", "9": "squat box fermo 2''\n5×3×77,5%", "10": "Squat normale\n5×3×80%", "11": "Squat fermo in buca 2’’\n4×2×85%", "12": "TEST 3RM\nRamping progressivo:\n\n5 reps @ 50%\n3 reps @ 60%\n3 reps @ 70%\n2 reps @ 77,5%\n1 reps @ 85%\ntentativi 3RM", "13": "Scarico tecnico\n3×3×65%"}}, {"id": "p2-3", "name": "T Bar", "note": null, "rest": null, "weekly": {"7": "3 × 7–9", "8": "3 × 7–9", "9": "3 × 7–9", "10": "3 × 7–9", "11": "3 × 7–9", "12": "3 × 7–9", "13": "3 × 7–9"}}, {"id": "p2-4", "name": "Pulley Triangolo", "note": null, "rest": null, "weekly": {"7": "3 × 7–9", "8": "3 × 7–9", "9": "3 × 7–9", "10": "3 × 7–9", "11": "3 × 7–9", "12": "3 × 7–9", "13": "3 × 7–9"}}, {"id": "p2-5", "name": "Rematore Manubrio Unilaterale", "note": null, "rest": null, "weekly": {"7": "2 × 7–9", "8": "2 × 7–9", "9": "2 × 7–9", "10": "2 × 7–9", "11": "2 × 7–9", "12": "2 × 7–9", "13": "2 × 7–9"}}, {"id": "p2-6", "name": "Hummer Curl", "note": null, "rest": null, "weekly": {"7": "3 × 7–9", "8": "3 × 7–9", "9": "3 × 7–9", "10": "3 × 7–9", "11": "3 × 7–9", "12": "3 × 7–9", "13": "3 × 7–9"}}]}, "P3": {"title": "Giorno 3", "exercises": [{"id": "p3-1", "name": "Trazioni Supine", "note": null, "rest": null, "weekly": {"7": "4×12", "8": "5×12", "9": "4×14", "10": "5×10 esplosive", "11": "3×15", "12": "2×10 leggere", "13": null}}, {"id": "p3-2", "name": "Spinte Manubri Panca 45", "note": null, "rest": null, "weekly": {"7": "3 × 7–9", "8": "3 × 7–9", "9": "3 × 7–9", "10": "3 × 7–9", "11": "3 × 7–9", "12": "3 × 7–9", "13": "3 × 7–9"}}, {"id": "p3-3", "name": "Piegamenti", "note": "Fermo 5''", "rest": null, "weekly": {"7": "4 × MAX", "8": "4 × MAX", "9": "4 × MAX", "10": "4 × MAX", "11": "4 × MAX", "12": "4 × MAX", "13": "4 × MAX"}}, {"id": "p3-4", "name": "Affondi Sul Posto", "note": null, "rest": null, "weekly": {"7": "3 × 20 TOTALI", "8": "3 × 20 TOTALI", "9": "3 × 20 TOTALI", "10": "3 × 20 TOTALI", "11": "3 × 20 TOTALI", "12": "3 × 20 TOTALI", "13": "3 × 20 TOTALI"}}]}, "P4": {"title": "Giorno 4", "exercises": [{"id": "p4-1", "name": "Squat Bilanciere", "note": null, "rest": null, "weekly": {"7": "Giorno medio\n\nFront squat\n4×6×65%", "8": "Giorno medio\n\nLow-bar squat\n5×5×67,5%", "9": "Giorno medio\n\nFront squat\n4×5×70%", "10": "Giorno medio\n\nLow-bar squat\n5×4×72,5%", "11": "Giorno medio\n\nFront squat\n4×3×75%", "12": "Giorno medio\n\nLow-bar squat\n3×3×70%", "13": "Giorno medio\n\nFront squat\n3×5×60%"}}, {"id": "p4-2", "name": "Military Press", "note": "Manubri, panca inclinata 70°", "rest": null, "weekly": {"7": "3 × 7–11", "8": "3 × 7–11", "9": "3 × 7–11", "10": "3 × 7–11", "11": "3 × 7–11", "12": "3 × 7–11", "13": "3 × 7–11"}}, {"id": "p4-3", "name": "Lat Machine", "note": null, "rest": null, "weekly": {"7": "3 × 7–9", "8": "3 × 7–9", "9": "3 × 7–9", "10": "3 × 7–9", "11": "3 × 7–9", "12": "3 × 7–9", "13": "3 × 7–9"}}, {"id": "p4-4", "name": "French Press Manubri Panca 30", "note": null, "rest": null, "weekly": {"7": "3 × 7–11", "8": "3 × 7–11", "9": "3 × 7–11", "10": "3 × 7–11", "11": "3 × 7–11", "12": "3 × 7–11", "13": "3 × 7–11"}}, {"id": "p4-5", "name": "Curl Panca 45", "note": null, "rest": null, "weekly": {"7": "3 × 7–11", "8": "3 × 7–11", "9": "3 × 7–11", "10": "3 × 7–11", "11": "3 × 7–11", "12": "3 × 7–11", "13": "3 × 7–11"}}]}, "C1": {"title": "Cardio", "exercises": [{"id": "c1-1", "name": "Corsa", "note": null, "rest": null, "weekly": {"7": "30-45' z2", "8": "5km zona 2", "9": "30-45' z2", "10": "5km zona 2", "11": "3km zona 2+2km z3", "12": "45'zona 2", "13": "scarico passivo"}}]}}
+;
+
+const WEEK_STARTS = {7:'2026-06-08',8:'2026-06-15',9:'2026-06-22',10:'2026-06-29',11:'2026-07-06',12:'2026-07-13',13:'2026-07-20'};
+const WEEK_TAGS = {11:'scarico',12:'test',13:'post-test'};
+const WEEK_LABELS = {11:'SCARICO ATTIVO',12:'SETTIMANA DI TEST',13:'POST-TEST — RIR2 compound, RIR1 accessori'};
+
+let currentWeek = detectCurrentWeek();
+
+function detectCurrentWeek(){
+  const today = new Date();
+  const weeks = Object.keys(WEEK_STARTS).map(Number).sort((a,b)=>a-b);
+  for(let i=0;i<weeks.length;i++){
+    const wk = weeks[i];
+    const start = new Date(WEEK_STARTS[wk]+'T00:00:00');
+    const nextStart = i+1<weeks.length ? new Date(WEEK_STARTS[weeks[i+1]]+'T00:00:00') : new Date(start.getTime()+7*864e5);
+    if(today>=start && today<nextStart) return wk;
+  }
+  if(today < new Date(WEEK_STARTS[weeks[0]]+'T00:00:00')) return weeks[0];
+  return weeks[weeks.length-1];
+}
+
+function fmtDate(d){
+  const dt = new Date(d+'T00:00:00');
+  return dt.toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit',year:'2-digit'});
+}
+function weekRange(wk){
+  const start = new Date(WEEK_STARTS[wk]+'T00:00:00');
+  const end = new Date(start.getTime()+6*864e5);
+  const f = d=>d.toLocaleDateString('it-IT',{day:'2-digit',month:'long'});
+  return f(start)+' – '+f(end);
+}
+function todayISO(){
+  const d = new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+
+let historyCache = {};
+async function loadHistory(id){
+  if(historyCache[id]) return historyCache[id];
+  try{
+    const res = await window.storage.get('log:'+id);
+    historyCache[id] = res && res.value ? JSON.parse(res.value) : [];
+  }catch(e){ historyCache[id] = []; }
+  return historyCache[id];
+}
+async function saveHistory(id, entries){
+  historyCache[id] = entries;
+  try{ await window.storage.set('log:'+id, JSON.stringify(entries)); }catch(e){}
+}
+
+function renderWeekSelector(){
+  const el = document.getElementById('weekSelector');
+  el.innerHTML = '';
+  Object.keys(WEEK_STARTS).map(Number).sort((a,b)=>a-b).forEach(wk=>{
+    const chip = document.createElement('button');
+    chip.className = 'wchip'+(wk===currentWeek?' active':'')+(WEEK_TAGS[wk]==='test'?' tag-test':'');
+    chip.textContent = 'S'+wk;
+    chip.onclick = ()=>{ currentWeek = wk; renderAll(); };
+    el.appendChild(chip);
+  });
+}
+
+function renderWeekInfo(){
+  document.getElementById('dateRange').textContent = weekRange(currentWeek);
+  const badge = document.getElementById('weekBadge');
+  const tag = WEEK_TAGS[currentWeek];
+  if(tag){
+    badge.textContent = WEEK_LABELS[currentWeek];
+    badge.className = 'week-badge '+(tag==='test'?'test':'scarico');
+  } else {
+    badge.textContent = 'Settimana '+currentWeek+' di 13';
+    badge.className = 'week-badge normal';
+  }
+}
+
+async function renderDays(){
+  const el = document.getElementById('days');
+  el.innerHTML = '';
+  const dayKeys = ['P1','P2','P3','P4','C1'];
+  for(const key of dayKeys){
+    const day = PROGRAM[key];
+    const dayEl = document.createElement('div');
+    dayEl.className = 'day';
+    dayEl.innerHTML = `
+      <div class="day-head">
+        <div class="plate${key==='C1'?' cardio':''}">${key}</div>
+        <div class="day-titles">
+          <div class="day-name">${day.title}</div>
+          <div class="day-meta" id="meta-${key}">—</div>
+        </div>
+      </div>
+      <div class="card" id="card-${key}"></div>
+    `;
+    el.appendChild(dayEl);
+    const cardEl = dayEl.querySelector('#card-'+key);
+    let lastDate = null;
+    for(const ex of day.exercises){
+      const exEl = document.createElement('div');
+      exEl.className = 'ex';
+      const scheme = ex.weekly[String(currentWeek)];
+      exEl.innerHTML = `
+        <p class="ex-name">${ex.name}</p>
+        ${ex.note ? `<p class="ex-note">${ex.note}</p>` : ''}
+        <div class="ex-scheme${scheme?'':' empty'}">${scheme ? scheme.replace(/\\n/g,'<br>') : 'Nessuna indicazione per questa settimana'}</div>
+        ${ex.rest ? `<div class="ex-tags"><span class="tag">rest ${ex.rest}</span></div>` : ''}
+        <div class="log-row">
+          <input type="text" placeholder="Carico (es. 62kg)" class="in-carico">
+          <input type="text" placeholder="Rep fatte" class="in-rep">
+        </div>
+        <input type="text" placeholder="Note / feedback" class="log-note in-note">
+        <button class="save-btn">Salva sessione</button>
+        <details class="hist">
+          <summary>Cronologia</summary>
+          <div class="hist-list"></div>
+        </details>
+      `;
+      cardEl.appendChild(exEl);
+
+      const saveBtn = exEl.querySelector('.save-btn');
+      const histList = exEl.querySelector('.hist-list');
+      const summary = exEl.querySelector('.hist summary');
+
+      const refreshHistory = async ()=>{
+        const entries = await loadHistory(ex.id);
+        summary.textContent = 'Cronologia ('+entries.length+')';
+        if(entries.length===0){
+          histList.innerHTML = '<div class="hist-empty">Nessuna sessione registrata</div>';
+          return;
+        }
+        const sorted = [...entries].sort((a,b)=> b.date.localeCompare(a.date));
+        histList.innerHTML = sorted.map((e,idx)=>`
+          <div class="hist-item">
+            <div class="hist-main">
+              <span class="hist-date">S${e.week} · ${fmtDate(e.date)}</span>
+              ${e.carico?('Carico: '+e.carico+' '):''}${e.rep?('· Rep: '+e.rep+' '):''}${e.note?('— '+e.note):''}
+            </div>
+            <button class="hist-del" data-idx="${entries.indexOf(e)}">×</button>
+          </div>
+        `).join('');
+        histList.querySelectorAll('.hist-del').forEach(btn=>{
+          btn.onclick = async ()=>{
+            const entries = await loadHistory(ex.id);
+            entries.splice(Number(btn.dataset.idx),1);
+            await saveHistory(ex.id, entries);
+            refreshHistory();
+            updateDayMeta();
+          };
+        });
+        if(sorted.length && (!lastDate || sorted[0].date > lastDate)) lastDate = sorted[0].date;
+      };
+      refreshHistory();
+
+      saveBtn.onclick = async ()=>{
+        const carico = exEl.querySelector('.in-carico').value.trim();
+        const rep = exEl.querySelector('.in-rep').value.trim();
+        const note = exEl.querySelector('.in-note').value.trim();
+        if(!carico && !rep && !note) return;
+        const entries = await loadHistory(ex.id);
+        entries.push({date: todayISO(), week: currentWeek, carico, rep, note});
+        await saveHistory(ex.id, entries);
+        exEl.querySelector('.in-carico').value = '';
+        exEl.querySelector('.in-rep').value = '';
+        exEl.querySelector('.in-note').value = '';
+        exEl.querySelector('.hist').open = true;
+        refreshHistory();
+        updateDayMeta();
+      };
+    }
+    const updateDayMeta = async ()=>{
+      let latest = null;
+      for(const ex of day.exercises){
+        const entries = await loadHistory(ex.id);
+        entries.forEach(e=>{ if(!latest || e.date>latest) latest = e.date; });
+      }
+      document.getElementById('meta-'+key).textContent = latest ? ('Ultima sessione registrata: '+fmtDate(latest)) : 'Nessuna sessione ancora registrata';
+    };
+    updateDayMeta();
+  }
+}
+
+function renderAll(){
+  renderWeekSelector();
+  renderWeekInfo();
+  renderDays();
+}
+
+renderAll();
+</script>
+
+</body>
+</html>
