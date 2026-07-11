@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mattia Guareschi — Diario Allenamento</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#14151A; --card:#1E2025; --card-border:#2A2C33;
+    --text:#EDEAE2; --text-dim:#9296A0;
+    --gold:#D9A94C; --teal:#4FA694; --rust:#C9713D; --field:#26282E;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;padding:0 0 70px;}
+  .wrap{max-width:640px;margin:0 auto;padding:0 18px;}
+
+  header{padding:32px 18px 18px;text-align:center;border-bottom:1px solid var(--card-border);}
+  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);margin:0 0 8px;}
+  h1{font-family:'Oswald',sans-serif;font-weight:700;font-size:26px;margin:0 0 4px;text-transform:uppercase;}
+  .sub{color:var(--text-dim);font-size:13px;margin:0 0 16px;}
+
+  /* WEEK SELECTOR */
+  .weeks{display:flex;gap:6px;overflow-x:auto;padding:2px 18px 6px;justify-content:center;flex-wrap:wrap;}
+  .wchip{
+    font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;
+    padding:7px 11px;border-radius:20px;border:1px solid var(--card-border);
+    background:transparent;color:var(--text-dim);cursor:pointer;flex:none;
+  }
+  .wchip.active{background:var(--gold);color:#14151A;border-color:var(--gold);}
+  .wchip.tag-test{color:var(--rust);}
+  .wchip.tag-test.active{background:var(--rust);color:#14151A;border-color:var(--rust);}
+
+  .week-info{text-align:center;margin:10px 0 0;}
+  .week-badge{
+    display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:11.5px;
+    padding:5px 12px;border-radius:20px;margin-top:4px;
+  }
+  .week-badge.scarico{color:var(--rust);border:1px solid rgba(201,113,61,.4);background:rgba(201,113,61,.08);}
+  .week-badge.test{color:#e05252;border:1px solid rgba(224,82,82,.4);background:rgba(224,82,82,.08);}
+  .week-badge.normal{color:var(--text-dim);border:1px solid var(--card-border);}
+
+  /* DAY */
+  .day{margin:26px 0;}
+  .day-head{display:flex;align-items:center;gap:14px;margin-bottom:12px;}
+  .plate{
+    width:44px;height:44px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;
+    background:radial-gradient(circle at 35% 30%, #3a3c43, #202227 70%);
+    border:2px solid #3a3c43;box-shadow:inset 0 0 0 3px #14151A, inset 0 0 0 4px #34363d;
+    font-family:'Oswald',sans-serif;font-weight:600;font-size:13px;color:var(--gold);
+  }
+  .plate.cardio{color:var(--teal);}
+  .day-titles{flex:1;}
+  .day-name{font-family:'Oswald',sans-serif;font-size:18px;font-weight:600;text-transform:uppercase;}
+  .day-meta{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-dim);margin-top:2px;}
+
+  .card{background:var(--card);border:1px solid var(--card-border);border-radius:14px;overflow:hidden;}
+  .ex{padding:14px 16px;border-bottom:1px solid var(--card-border);}
+  .ex:last-child{border-bottom:none;}
+  .ex-name{font-weight:600;font-size:15px;margin:0 0 2px;}
+  .ex-note{font-size:12px;color:var(--text-dim);margin:0 0 8px;}
+  .ex-scheme{
+    font-family:'IBM Plex Mono',monospace;font-size:13.5px;font-weight:600;color:var(--gold);
+    white-space:pre-line;line-height:1.5;background:rgba(217,169,76,.06);
+    border:1px solid rgba(217,169,76,.18);border-radius:8px;padding:8px 10px;margin-bottom:10px;
+  }
+  .ex-scheme.empty{color:var(--text-dim);font-weight:500;font-style:italic;background:transparent;border-style:dashed;}
+  .ex-tags{display:flex;gap:6px;margin-bottom:10px;}
+  .tag{font-family:'IBM Plex Mono',monospace;font-size:10.5px;padding:3px 8px;border-radius:20px;background:rgba(79,166,148,.1);color:var(--teal);border:1px solid rgba(79,166,148,.25);}
+
+  .log-row{display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap;align-items:center;}
+  .log-row input{
+    flex:1;min-width:0;background:var(--field);border:1px solid var(--card-border);
+    border-radius:8px;padding:8px 9px;color:var(--text);font-size:13px;font-family:'Inter',sans-serif;
+  }
+  .log-row input.carico-compact{flex:0 0 78px;width:78px;padding:8px 7px;}
+  .log-row input::placeholder{color:#5c5e66;}
+  .log-note{width:100%;background:var(--field);border:1px solid var(--card-border);border-radius:8px;
+    padding:8px 9px;color:var(--text);font-size:13px;font-family:'Inter',sans-serif;margin-bottom:6px;}
+
+  .save-hint{
+    font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--teal);
+    height:14px;margin-bottom:8px;opacity:0;transition:opacity .3s ease;
+  }
+  .save-hint.show{opacity:1;}
+  .save-hint.err{color:var(--rust);}
+
+  .storage-warn{
+    display:none;background:rgba(201,113,61,.1);border:1px solid rgba(201,113,61,.4);
+    border-radius:12px;padding:12px 14px;margin:16px 0 0;font-size:12.5px;color:var(--rust);line-height:1.5;
+  }
+  .storage-warn.show{display:block;}
+  .storage-status{
+    font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--teal);
+    margin:-10px 0 14px;
+  }
+
+  .data-btns{display:flex;gap:8px;justify-content:center;margin-top:16px;}
+  .data-btn{
+    font-family:'IBM Plex Mono',monospace;font-size:11.5px;font-weight:600;
+    background:var(--field);color:var(--text-dim);border:1px solid var(--card-border);
+    border-radius:20px;padding:8px 14px;cursor:pointer;
+  }
+  .data-btn:active{background:var(--card-border);}
+  .data-msg{
+    text-align:center;font-family:'IBM Plex Mono',monospace;font-size:11px;
+    color:var(--teal);margin-top:8px;min-height:14px;
+  }
+  .data-msg.err{color:var(--rust);}
+
+  .spark-block{margin-bottom:10px;}
+  .spark-svg{width:100%;height:46px;display:block;}
+  .spark-range{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-dim);margin-top:2px;}
+  .spark-label{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;}
+
+  .samelast-btn{
+    display:none;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--teal);
+    background:none;border:1px solid rgba(79,166,148,.35);border-radius:20px;padding:5px 10px;
+    cursor:pointer;margin-bottom:8px;
+  }
+  .samelast-btn:active{opacity:.7;}
+
+  .reps-adjust{display:flex;gap:4px;flex:none;}
+  .reps-btn{
+    width:22px;height:22px;border-radius:6px;border:1px solid var(--card-border);background:var(--field);
+    color:var(--text-dim);font-family:'IBM Plex Mono',monospace;font-size:14px;line-height:1;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;padding:0;
+  }
+  .reps-btn:active{background:var(--card-border);}
+  .reps-boxes{display:flex;flex-wrap:wrap;gap:4px;flex:1;min-width:80px;}
+  .rep-box, .log-row .rep-box{
+    width:34px;height:34px;text-align:center;background:var(--field);border:1px solid var(--card-border);
+    border-radius:8px;color:var(--text);font-size:14px;font-family:'IBM Plex Mono',monospace;padding:0;
+    flex:none!important;min-width:34px;
+  }
+
+  /* BODYWEIGHT */
+  .bw-card{background:var(--card);border:1px solid var(--card-border);border-radius:14px;padding:16px;margin:22px 0;}
+  .bw-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+  .bw-title{font-family:'Oswald',sans-serif;font-size:16px;font-weight:600;text-transform:uppercase;}
+  .bw-latest{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--gold);margin-left:auto;}
+
+  .note-box{background:var(--card);border:1px solid var(--card-border);border-radius:14px;padding:16px 18px;margin-top:30px;font-size:13px;color:var(--text-dim);line-height:1.6;}
+  .note-box b{color:var(--text);}
+  footer{text-align:center;color:var(--text-dim);font-size:11px;margin-top:24px;font-family:'IBM Plex Mono',monospace;}
+</style>
+</head>
+<body>
+
+<header>
+  <p class="eyebrow">Mesociclo 2 · Mattia Guareschi</p>
+  <h1>Diario Allenamento</h1>
+  <p class="sub" id="dateRange">—</p>
+  <p class="storage-status" id="storageStatus"></p>
+  <div class="weeks" id="weekSelector"></div>
+  <div class="week-info"><span class="week-badge" id="weekBadge"></span></div>
+</header>
+
+<div class="wrap">
+  <div class="storage-warn" id="storageWarn">
+    ⚠️ <b>Il salvataggio non è disponibile in questa modalità di apertura.</b> Quello che scrivi andrà perso alla chiusura. Scarica il file e aprilo nel browser del telefono (come la scheda della dieta), oppure apri il diario come artifact dentro Claude.
+  </div>
+  <div class="bw-card">
+    <div class="bw-head">
+      <span class="bw-title">⚖️ Peso corporeo</span>
+      <span class="bw-latest" id="bwLatest"></span>
+    </div>
+    <div id="bwSpark"></div>
+    <div class="log-row">
+      <input type="text" placeholder="Peso (es. 74.5kg)" id="bwPeso">
+      <input type="text" placeholder="Nota (facoltativa)" id="bwNote">
+    </div>
+    <div class="save-hint" id="bwHint"></div>
+  </div>
+</div>
+
+<div class="wrap" id="days"></div>
+
+<div class="wrap">
+  <div class="note-box">
+    <b>RIR0</b> su accessori e compound in tutte le settimane: quando serve, dai priorità alla tecnica piuttosto che spingere sul RIR.<br><br>
+    Quello che scrivi in carico, rep e note si salva da solo mentre scrivi — nessun tasto da premere. Cambiando settimana in alto ritrovi quello che avevi scritto in quella settimana.
+  </div>
+  <div class="data-btns">
+    <button class="data-btn" id="exportBtn">⬇ Esporta dati</button>
+    <button class="data-btn" id="importBtn">⬆ Importa dati</button>
+    <input type="file" id="importFile" accept=".json,application/json" style="display:none">
+  </div>
+  <div class="data-msg" id="dataMsg"></div>
+  <footer>P5, P6 e C2–C6 non programmati in questo mesociclo</footer>
+</div>
+
+<script>
+const PROGRAM = {"P1": {"title": "Giorno 1", "exercises": [{"id": "p1-1", "name": "Stacco", "note": "Massimale attuale: 110 kg", "rest": null, "weekly": {"7": "4×4 @ 72,5%\nPausa 2” appena staccato da terra", "8": "5×3 @ 77,5%\nTempo 3” fino al ginocchio", "9": "4×3 @ 75%\nDeficit 3 cm + fermo 1” a metà tibia", "10": "5×2 @ 82,5%\nStacco normale", "11": "4×4 @ 70%\nPausa 2” sotto il ginocchio", "12": "6×2 @ 85%", "13": "3×3 @ 72,5%\nTecnica pulita\nFermo 2” a metà tibia"}}, {"id": "p1-2", "name": "Panca 45 Bilanciere", "note": null, "rest": null, "weekly": {"7": "3 × 7–9", "8": "3 × 7–9", "9": "3 × 7–9", "10": "3 × 7–9", "11": "3 × 7–9", "12": "3 × 7–9", "13": "3 × 7–9"}}, {"id": "p1-3", "name": "Trazioni Supine", "note": null, "rest": null, "weekly": {"7": "1 ramping 3 + 3×8", "8": "1 ramping 2+ 2×10", "9": "ladder 1-2-3-4-5-6-7", "10": "1 AMRAP", "11": "1 AMRAP + 2×8", "12": "MAX REP finale", "13": null}}, {"id": "p1-4", "name": "Curl Bilanciere EZ", "note": null, "rest": "45''", "weekly": {"7": "3 × 7–9", "8": "3 × 7–9", "9": "3 × 7–9", "10": "3 × 7–9", "11": "3 × 7–9", "12": "3 × 7–9", "13": "3 × 7–9"}}]}, "P2": {"title": "Giorno 2", "exercises": [{"id": "p2-1", "name": "Adduzioni Scapolari", "note": null, "rest": null, "weekly": {"7": "3 × 10", "8": "3 × 10", "9": "3 × 10", "10": "3 × 10", "11": "3 × 10", "12": "3 × 10", "13": "3 × 10"}}, {"id": "p2-2", "name": "Squat Bilanciere", "note": "Massimale attuale: 95 kg", "rest": null, "weekly": {"7": "Squat con fermo in buca 2’’\n5×4×72,5%", "8": "Squat eccentrica 4’’\n4×4×75%", "9": "squat box fermo 2''\n5×3×77,5%", "10": "Squat normale\n5×3×80%", "11": "Squat fermo in buca 2’’\n4×2×85%", "12": "TEST 3RM\nRamping progressivo:\n\n5 reps @ 50%\n3 reps @ 60%\n3 reps @ 70%\n2 reps @ 77,5%\n1 reps @ 85%\ntentativi 3RM", "13": "Scarico tecnico\n3×3×65%"}}, {"id": "p2-3", "name": "T Bar", "note": null, "rest": null, "weekly": {"7": "3 × 7–9", "8": "3 × 7–9", "9": "3 × 7–9", "10": "3 × 7–9", "11": "3 × 7–9", "12": "3 × 7–9", "13": "3 × 7–9"}}, {"id": "p2-4", "name": "Pulley Triangolo", "note": null, "rest": null, "weekly": {"7": "3 × 7–9", "8": "3 × 7–9", "9": "3 × 7–9", "10": "3 × 7–9", "11": "3 × 7–9", "12": "3 × 7–9", "13": "3 × 7–9"}}, {"id": "p2-5", "name": "Rematore Manubrio Unilaterale", "note": null, "rest": null, "weekly": {"7": "2 × 7–9", "8": "2 × 7–9", "9": "2 × 7–9", "10": "2 × 7–9", "11": "2 × 7–9", "12": "2 × 7–9", "13": "2 × 7–9"}}, {"id": "p2-6", "name": "Hummer Curl", "note": null, "rest": null, "weekly": {"7": "3 × 7–9", "8": "3 × 7–9", "9": "3 × 7–9", "10": "3 × 7–9", "11": "3 × 7–9", "12": "3 × 7–9", "13": "3 × 7–9"}}]}, "P3": {"title": "Giorno 3", "exercises": [{"id": "p3-1", "name": "Trazioni Supine", "note": null, "rest": null, "weekly": {"7": "4×12", "8": "5×12", "9": "4×14", "10": "5×10 esplosive", "11": "3×15", "12": "2×10 leggere", "13": null}}, {"id": "p3-2", "name": "Spinte Manubri Panca 45", "note": null, "rest": null, "weekly": {"7": "3 × 7–9", "8": "3 × 7–9", "9": "3 × 7–9", "10": "3 × 7–9", "11": "3 × 7–9", "12": "3 × 7–9", "13": "3 × 7–9"}}, {"id": "p3-3", "name": "Piegamenti", "note": "Fermo 5''", "rest": null, "weekly": {"7": "4 × MAX", "8": "4 × MAX", "9": "4 × MAX", "10": "4 × MAX", "11": "4 × MAX", "12": "4 × MAX", "13": "4 × MAX"}}, {"id": "p3-4", "name": "Affondi Sul Posto", "note": null, "rest": null, "weekly": {"7": "3 × 20 TOTALI", "8": "3 × 20 TOTALI", "9": "3 × 20 TOTALI", "10": "3 × 20 TOTALI", "11": "3 × 20 TOTALI", "12": "3 × 20 TOTALI", "13": "3 × 20 TOTALI"}}]}, "P4": {"title": "Giorno 4", "exercises": [{"id": "p4-1", "name": "Squat Bilanciere", "note": null, "rest": null, "weekly": {"7": "Giorno medio\n\nFront squat\n4×6×65%", "8": "Giorno medio\n\nLow-bar squat\n5×5×67,5%", "9": "Giorno medio\n\nFront squat\n4×5×70%", "10": "Giorno medio\n\nLow-bar squat\n5×4×72,5%", "11": "Giorno medio\n\nFront squat\n4×3×75%", "12": "Giorno medio\n\nLow-bar squat\n3×3×70%", "13": "Giorno medio\n\nFront squat\n3×5×60%"}}, {"id": "p4-2", "name": "Military Press", "note": "Manubri, panca inclinata 70°", "rest": null, "weekly": {"7": "3 × 7–11", "8": "3 × 7–11", "9": "3 × 7–11", "10": "3 × 7–11", "11": "3 × 7–11", "12": "3 × 7–11", "13": "3 × 7–11"}}, {"id": "p4-3", "name": "Lat Machine", "note": null, "rest": null, "weekly": {"7": "3 × 7–9", "8": "3 × 7–9", "9": "3 × 7–9", "10": "3 × 7–9", "11": "3 × 7–9", "12": "3 × 7–9", "13": "3 × 7–9"}}, {"id": "p4-4", "name": "French Press Manubri Panca 30", "note": null, "rest": null, "weekly": {"7": "3 × 7–11", "8": "3 × 7–11", "9": "3 × 7–11", "10": "3 × 7–11", "11": "3 × 7–11", "12": "3 × 7–11", "13": "3 × 7–11"}}, {"id": "p4-5", "name": "Curl Panca 45", "note": null, "rest": null, "weekly": {"7": "3 × 7–11", "8": "3 × 7–11", "9": "3 × 7–11", "10": "3 × 7–11", "11": "3 × 7–11", "12": "3 × 7–11", "13": "3 × 7–11"}}]}, "C1": {"title": "Cardio", "exercises": [{"id": "c1-1", "name": "Corsa", "note": null, "rest": null, "weekly": {"7": "30-45' z2", "8": "5km zona 2", "9": "30-45' z2", "10": "5km zona 2", "11": "3km zona 2+2km z3", "12": "45'zona 2", "13": "scarico passivo"}}]}}
+;
+
+const WEEK_STARTS = {7:'2026-06-08',8:'2026-06-15',9:'2026-06-22',10:'2026-06-29',11:'2026-07-06',12:'2026-07-13',13:'2026-07-20'};
+const WEEK_TAGS = {11:'scarico',12:'test',13:'post-test'};
+const WEEK_LABELS = {11:'SCARICO ATTIVO',12:'SETTIMANA DI TEST',13:'POST-TEST — RIR2 compound, RIR1 accessori'};
+
+let currentWeek = detectCurrentWeek();
+
+function detectCurrentWeek(){
+  const today = new Date();
+  const weeks = Object.keys(WEEK_STARTS).map(Number).sort((a,b)=>a-b);
+  for(let i=0;i<weeks.length;i++){
+    const wk = weeks[i];
+    const start = new Date(WEEK_STARTS[wk]+'T00:00:00');
+    const nextStart = i+1<weeks.length ? new Date(WEEK_STARTS[weeks[i+1]]+'T00:00:00') : new Date(start.getTime()+7*864e5);
+    if(today>=start && today<nextStart) return wk;
+  }
+  if(today < new Date(WEEK_STARTS[weeks[0]]+'T00:00:00')) return weeks[0];
+  return weeks[weeks.length-1];
+}
+
+function fmtDate(d){
+  const dt = new Date(d+'T00:00:00');
+  return dt.toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit',year:'2-digit'});
+}
+function weekRange(wk){
+  const start = new Date(WEEK_STARTS[wk]+'T00:00:00');
+  const end = new Date(start.getTime()+6*864e5);
+  const f = d=>d.toLocaleDateString('it-IT',{day:'2-digit',month:'long'});
+  return f(start)+' – '+f(end);
+}
+function todayISO(){
+  const d = new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+
+function parseNum(s){
+  if(!s) return null;
+  const m = String(s).match(/(\d+[.,]?\d*)/);
+  if(!m) return null;
+  const v = parseFloat(m[1].replace(',','.'));
+  return isNaN(v) ? null : v;
+}
+
+function guessSets(scheme){
+  if(!scheme) return 3;
+  const m = scheme.match(/(\d+)\s*×/);
+  if(m){
+    const n = parseInt(m[1],10);
+    if(n>0 && n<=10) return n;
+  }
+  return 3;
+}
+
+function splitReps(str){
+  if(!str) return [];
+  return String(str).trim().split(/[\s,]+/).filter(Boolean);
+}
+
+function sparkSVG(points, color){
+  if(points.length<2) return '';
+  const w=260,h=46,pad=6;
+  const vals = points.map(p=>p.val);
+  const min = Math.min(...vals), max = Math.max(...vals);
+  const range = (max-min)||1;
+  const stepX = points.length>1 ? (w-2*pad)/(points.length-1) : 0;
+  const coords = points.map((p,i)=>{
+    const x = pad + i*stepX;
+    const y = h-pad - ((p.val-min)/range)*(h-2*pad);
+    return [x,y];
+  });
+  const line = coords.map(c=>c.join(',')).join(' ');
+  const dots = coords.map(([x,y])=>`<circle cx="${x}" cy="${y}" r="2.5" fill="${color}"/>`).join('');
+  return `<svg viewBox="0 0 ${w} ${h}" class="spark-svg" preserveAspectRatio="none"><polyline points="${line}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>${dots}</svg>`;
+}
+
+function sparkBlock(points, unit, color){
+  if(points.length<2) return '';
+  const svg = sparkSVG(points, color);
+  return `<div class="spark-block">
+    <div class="spark-label">Andamento per settimana</div>
+    ${svg}
+    <div class="spark-range">S${points[0].week}: ${points[0].val}${unit} → S${points[points.length-1].week}: ${points[points.length-1].val}${unit}</div>
+  </div>`;
+}
+
+function weeklyPoints(data, key){
+  return Object.keys(data||{})
+    .map(Number)
+    .sort((a,b)=>a-b)
+    .map(wk=>({week:wk, val: parseNum((data[String(wk)]||{})[key])}))
+    .filter(p=>p.val!==null);
+}
+
+function weekForDate(dateStr){
+  const d = new Date((dateStr||todayISO())+'T00:00:00');
+  const weeks = Object.keys(WEEK_STARTS).map(Number).sort((a,b)=>a-b);
+  for(let i=0;i<weeks.length;i++){
+    const wk = weeks[i];
+    const start = new Date(WEEK_STARTS[wk]+'T00:00:00');
+    const nextStart = i+1<weeks.length ? new Date(WEEK_STARTS[weeks[i+1]]+'T00:00:00') : new Date(start.getTime()+7*864e5);
+    if(d>=start && d<nextStart) return wk;
+  }
+  if(d < new Date(WEEK_STARTS[weeks[0]]+'T00:00:00')) return weeks[0];
+  return weeks[weeks.length-1];
+}
+
+// --- Storage a doppio backend: localStorage (file scaricato nel browser, come la dieta)
+//     oppure window.storage (artifact dentro Claude). ---
+const LS_PREFIX = 'diario-allenamento-mattia-v1:';
+let backend = null; // 'local' | 'claude' | null
+
+function detectLocalStorage(){
+  try{
+    const k = LS_PREFIX+'ping';
+    localStorage.setItem(k,'1');
+    localStorage.removeItem(k);
+    return true;
+  }catch(e){ return false; }
+}
+
+async function detectClaudeStorage(){
+  try{
+    if(!window.storage || typeof window.storage.set !== 'function') return false;
+    await window.storage.set('diario:ping', '1');
+    return true;
+  }catch(e){ return false; }
+}
+
+async function checkStorage(){
+  if(detectLocalStorage()){ backend = 'local'; }
+  else if(await detectClaudeStorage()){ backend = 'claude'; }
+  else { backend = null; }
+  const warn = document.getElementById('storageWarn');
+  const status = document.getElementById('storageStatus');
+  if(!backend){
+    warn.classList.add('show');
+    status.textContent = '';
+  } else {
+    status.textContent = backend==='local'
+      ? '● salvataggio automatico attivo (su questo dispositivo)'
+      : '● salvataggio automatico attivo (dentro Claude)';
+  }
+  return backend;
+}
+
+async function rawGet(key){
+  if(backend==='local'){
+    const v = localStorage.getItem(LS_PREFIX+key);
+    return v===null ? null : v;
+  }
+  if(backend==='claude'){
+    try{
+      const res = await window.storage.get(key);
+      return res && res.value!=null ? res.value : null;
+    }catch(e){ return null; }
+  }
+  return null;
+}
+
+async function rawSet(key, value){
+  if(backend==='local'){
+    try{ localStorage.setItem(LS_PREFIX+key, value); return true; }catch(e){ return false; }
+  }
+  if(backend==='claude'){
+    try{ const res = await window.storage.set(key, value); return !!res; }catch(e){ return false; }
+  }
+  return false;
+}
+
+let historyCache = {};
+async function loadHistory(id){
+  if(historyCache[id]) return historyCache[id];
+  let data = {};
+  try{
+    const value = await rawGet('log:'+id);
+    if(value){
+      const parsed = JSON.parse(value);
+      if(Array.isArray(parsed)){
+        // migrazione dal vecchio formato a elenco di sessioni (anche voci senza settimana, es. vecchio peso corporeo)
+        parsed.forEach(e=>{
+          const wk = (e.week!=null) ? String(e.week) : String(weekForDate(e.date));
+          const {week, ...rest} = e;
+          data[wk] = {...rest, date: e.date || todayISO()};
+        });
+      } else if(parsed && typeof parsed==='object'){
+        data = parsed;
+      }
+    }
+  }catch(e){}
+  historyCache[id] = data;
+  return data;
+}
+async function saveHistory(id, data){
+  historyCache[id] = data;
+  return await rawSet('log:'+id, JSON.stringify(data));
+}
+
+function renderWeekSelector(){
+  const el = document.getElementById('weekSelector');
+  el.innerHTML = '';
+  Object.keys(WEEK_STARTS).map(Number).sort((a,b)=>a-b).forEach(wk=>{
+    const chip = document.createElement('button');
+    chip.className = 'wchip'+(wk===currentWeek?' active':'')+(WEEK_TAGS[wk]==='test'?' tag-test':'');
+    chip.textContent = 'S'+wk;
+    chip.onclick = ()=>{ currentWeek = wk; renderAll(); };
+    el.appendChild(chip);
+  });
+}
+
+function renderWeekInfo(){
+  document.getElementById('dateRange').textContent = weekRange(currentWeek);
+  const badge = document.getElementById('weekBadge');
+  const tag = WEEK_TAGS[currentWeek];
+  if(tag){
+    badge.textContent = WEEK_LABELS[currentWeek];
+    badge.className = 'week-badge '+(tag==='test'?'test':'scarico');
+  } else {
+    badge.textContent = 'Settimana '+currentWeek+' di 13';
+    badge.className = 'week-badge normal';
+  }
+}
+
+async function renderDays(){
+  const el = document.getElementById('days');
+  el.innerHTML = '';
+  const dayKeys = ['P1','P2','P3','P4','C1'];
+  for(const key of dayKeys){
+    const day = PROGRAM[key];
+    const dayEl = document.createElement('div');
+    dayEl.className = 'day';
+    dayEl.innerHTML = `
+      <div class="day-head">
+        <div class="plate${key==='C1'?' cardio':''}">${key}</div>
+        <div class="day-titles">
+          <div class="day-name">${day.title}</div>
+          <div class="day-meta" id="meta-${key}">—</div>
+        </div>
+      </div>
+      <div class="card" id="card-${key}"></div>
+    `;
+    el.appendChild(dayEl);
+    const cardEl = dayEl.querySelector('#card-'+key);
+    for(const ex of day.exercises){
+      const isCardio = ex.id.startsWith('c');
+      const exEl = document.createElement('div');
+      exEl.className = 'ex';
+      const scheme = ex.weekly[String(currentWeek)];
+      exEl.innerHTML = `
+        <p class="ex-name">${ex.name}</p>
+        ${ex.note ? `<p class="ex-note">${ex.note}</p>` : ''}
+        <div class="ex-scheme${scheme?'':' empty'}">${scheme ? scheme.replace(/\n/g,'<br>') : 'Nessuna indicazione per questa settimana'}</div>
+        ${ex.rest ? `<div class="ex-tags"><span class="tag">rest ${ex.rest}</span></div>` : ''}
+        <button class="samelast-btn">↻ copia settimana precedente</button>
+        <div class="log-row">
+          <input type="text" placeholder="${isCardio?'Distanza':'Carico'}" class="in-carico${isCardio?'':' carico-compact'}">
+          ${isCardio ? '<input type="text" placeholder="Tempo fatto" class="in-rep">' : `
+          <div class="reps-boxes"></div>
+          <div class="reps-adjust">
+            <button class="reps-btn rep-minus" type="button">–</button>
+            <button class="reps-btn rep-plus" type="button">+</button>
+          </div>`}
+        </div>
+        <input type="text" placeholder="Note / feedback" class="log-note in-note">
+        <div class="save-hint"></div>
+        <div class="spark-holder"></div>
+      `;
+      cardEl.appendChild(exEl);
+
+      const inCarico = exEl.querySelector('.in-carico');
+      const inRep = isCardio ? exEl.querySelector('.in-rep') : null;
+      const inNote = exEl.querySelector('.in-note');
+      const sameBtn = exEl.querySelector('.samelast-btn');
+      const sparkHolder = exEl.querySelector('.spark-holder');
+      const hint = exEl.querySelector('.save-hint');
+      const repsBoxesEl = isCardio ? null : exEl.querySelector('.reps-boxes');
+      const repMinusBtn = isCardio ? null : exEl.querySelector('.rep-minus');
+      const repPlusBtn = isCardio ? null : exEl.querySelector('.rep-plus');
+
+      const data = await loadHistory(ex.id);
+      let repsState = [];
+
+      const buildRepsBoxes = ()=>{
+        repsBoxesEl.innerHTML = '';
+        repsState.forEach((val,i)=>{
+          const inp = document.createElement('input');
+          inp.className = 'rep-box';
+          inp.type = 'text';
+          inp.inputMode = 'numeric';
+          inp.maxLength = 3;
+          inp.value = val || '';
+          inp.placeholder = 'rep';
+          inp.addEventListener('input', ()=>{ repsState[i]=inp.value.trim(); debouncedPersist(); });
+          inp.addEventListener('blur', ()=>{ repsState[i]=inp.value.trim(); clearTimeout(saveTimeout); persist(); });
+          repsBoxesEl.appendChild(inp);
+        });
+      };
+
+      const findPrevCarico = ()=>{
+        const weeks = Object.keys(data).map(Number).filter(w=>w<currentWeek).sort((a,b)=>b-a);
+        for(const w of weeks){
+          const c = data[String(w)].carico;
+          if(c) return c;
+        }
+        return null;
+      };
+
+      const fillFields = ()=>{
+        const wk = data[String(currentWeek)] || {};
+        inCarico.value = wk.carico || '';
+        const prevCarico = findPrevCarico();
+        inCarico.placeholder = (!inCarico.value && prevCarico) ? prevCarico : (isCardio?'Distanza':'Carico');
+        inNote.value = wk.note || '';
+        if(isCardio){
+          inRep.value = wk.rep || '';
+        } else {
+          const saved = Array.isArray(wk.reps) ? wk.reps.slice() : splitReps(wk.rep);
+          const target = saved.length ? saved.length : guessSets(scheme);
+          repsState = Array.from({length:target}, (_,i)=> saved[i] || '');
+          buildRepsBoxes();
+        }
+      };
+      fillFields();
+
+      const renderSpark = ()=>{
+        sparkHolder.innerHTML = sparkBlock(weeklyPoints(data,'carico'), 'kg', '#D9A94C');
+      };
+      renderSpark();
+
+      const updateSameBtn = ()=>{
+        const earlier = Object.keys(data).map(Number).filter(w=>w<currentWeek).sort((a,b)=>b-a);
+        if(earlier.length===0){ sameBtn.style.display='none'; return; }
+        sameBtn.style.display='inline-block';
+        sameBtn.onclick = ()=>{
+          const src = data[String(earlier[0])];
+          if(src.carico) inCarico.value = src.carico;
+          if(isCardio){
+            if(src.rep) inRep.value = src.rep;
+          } else {
+            const srcReps = Array.isArray(src.reps) ? src.reps : splitReps(src.rep);
+            if(srcReps.length){ repsState = srcReps.slice(); buildRepsBoxes(); }
+          }
+          persist();
+        };
+      };
+      updateSameBtn();
+
+      if(!isCardio){
+        repPlusBtn.onclick = ()=>{ repsState.push(''); buildRepsBoxes(); persist(); };
+        repMinusBtn.onclick = ()=>{ if(repsState.length>1){ repsState.pop(); buildRepsBoxes(); persist(); } };
+      }
+
+      let saveTimeout;
+      const persist = async ()=>{
+        const carico = inCarico.value.trim();
+        const note = inNote.value.trim();
+        let empty, payload;
+        if(isCardio){
+          const rep = inRep.value.trim();
+          empty = !carico && !rep && !note;
+          payload = {carico, rep, note, date: todayISO()};
+        } else {
+          const reps = repsState.map(v=>(v||'').trim());
+          empty = !carico && !reps.some(v=>v!=='') && !note;
+          payload = {carico, reps, note, date: todayISO()};
+        }
+        if(empty){ delete data[String(currentWeek)]; } else { data[String(currentWeek)] = payload; }
+        const ok = await saveHistory(ex.id, data);
+        renderSpark();
+        updateSameBtn();
+        updateDayMeta();
+        hint.textContent = ok ? '✓ salvato' : '⚠ non salvato';
+        hint.classList.toggle('err', !ok);
+        hint.classList.add('show');
+        clearTimeout(hint._t);
+        hint._t = setTimeout(()=>{ hint.classList.remove('show'); }, ok ? 1200 : 4000);
+      };
+      const debouncedPersist = ()=>{
+        clearTimeout(saveTimeout);
+        saveTimeout = setTimeout(persist, 600);
+      };
+      const watched = isCardio ? [inCarico, inRep, inNote] : [inCarico, inNote];
+      watched.forEach(inp=>{
+        inp.addEventListener('input', debouncedPersist);
+        inp.addEventListener('blur', ()=>{ clearTimeout(saveTimeout); persist(); });
+      });
+    }
+    const updateDayMeta = async ()=>{
+      let latest = null;
+      for(const ex of day.exercises){
+        const data = await loadHistory(ex.id);
+        Object.values(data).forEach(e=>{ if(e.date && (!latest || e.date>latest)) latest = e.date; });
+      }
+      document.getElementById('meta-'+key).textContent = latest ? ('Ultimo aggiornamento: '+fmtDate(latest)) : 'Nessun dato ancora registrato';
+    };
+    updateDayMeta();
+  }
+}
+
+async function renderBodyweight(){
+  const pesoInput = document.getElementById('bwPeso');
+  const noteInput = document.getElementById('bwNote');
+  const sparkEl = document.getElementById('bwSpark');
+  const latestEl = document.getElementById('bwLatest');
+  const hint = document.getElementById('bwHint');
+
+  const data = await loadHistory('bodyweight');
+
+  const fillFields = ()=>{
+    const wk = data[String(currentWeek)] || {};
+    pesoInput.value = wk.peso || '';
+    noteInput.value = wk.note || '';
+  };
+  fillFields();
+
+  const renderSpark = ()=>{
+    const points = weeklyPoints(data,'peso');
+    sparkEl.innerHTML = sparkBlock(points, 'kg', '#4FA694');
+    const weeksWithData = Object.keys(data).map(Number).sort((a,b)=>b-a);
+    if(weeksWithData.length){
+      const last = data[String(weeksWithData[0])];
+      latestEl.textContent = last.peso ? (last.peso+' · S'+weeksWithData[0]) : '';
+    } else {
+      latestEl.textContent = '';
+    }
+  };
+  renderSpark();
+
+  let saveTimeout;
+  const persist = async ()=>{
+    const peso = pesoInput.value.trim();
+    const note = noteInput.value.trim();
+    if(!peso && !note){
+      delete data[String(currentWeek)];
+    } else {
+      data[String(currentWeek)] = {peso, note, date: todayISO()};
+    }
+    const ok = await saveHistory('bodyweight', data);
+    renderSpark();
+    hint.textContent = ok ? '✓ salvato' : '⚠ non salvato';
+    hint.classList.toggle('err', !ok);
+    hint.classList.add('show');
+    clearTimeout(hint._t);
+    hint._t = setTimeout(()=>{ hint.classList.remove('show'); }, ok ? 1200 : 4000);
+  };
+  const debouncedPersist = ()=>{
+    clearTimeout(saveTimeout);
+    saveTimeout = setTimeout(persist, 600);
+  };
+  [pesoInput, noteInput].forEach(inp=>{
+    inp.addEventListener('input', debouncedPersist);
+    inp.addEventListener('blur', ()=>{ clearTimeout(saveTimeout); persist(); });
+  });
+}
+
+function renderAll(){
+  renderWeekSelector();
+  renderWeekInfo();
+  renderDays();
+  renderBodyweight();
+}
+
+function allIds(){
+  const ids = ['bodyweight'];
+  Object.values(PROGRAM).forEach(day=> day.exercises.forEach(ex=> ids.push(ex.id)));
+  return ids;
+}
+
+function exerciseNameById(id){
+  for(const day of Object.values(PROGRAM)){
+    const ex = day.exercises.find(e=>e.id===id);
+    if(ex) return ex.name;
+  }
+  return id==='bodyweight' ? 'Peso corporeo' : id;
+}
+
+function setDataMsg(text, isErr){
+  const el = document.getElementById('dataMsg');
+  el.textContent = text;
+  el.classList.toggle('err', !!isErr);
+  clearTimeout(el._t);
+  if(text) el._t = setTimeout(()=>{ el.textContent=''; }, 4000);
+}
+
+async function exportData(){
+  const out = {app:'diario-allenamento-mattia', version:1, exported: new Date().toISOString(), data:{}};
+  for(const id of allIds()){
+    const d = await loadHistory(id);
+    if(Object.keys(d).length) out.data[id] = d;
+  }
+  const json = JSON.stringify(out, null, 1);
+  const blob = new Blob([json], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'diario-allenamento-dati.json';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 2000);
+  // fallback utile dentro Claude: copia anche negli appunti
+  try{ await navigator.clipboard.writeText(json); setDataMsg('✓ esportato (file scaricato + copiato negli appunti)'); }
+  catch(e){ setDataMsg('✓ file esportato'); }
+}
+
+async function importData(file){
+  try{
+    const text = await file.text();
+    const parsed = JSON.parse(text);
+    const payload = parsed && parsed.data && typeof parsed.data==='object' ? parsed.data : parsed;
+    if(!payload || typeof payload!=='object') throw new Error('formato non valido');
+    let count = 0;
+    for(const [id, d] of Object.entries(payload)){
+      if(d && typeof d==='object'){
+        await saveHistory(id, d);
+        count++;
+      }
+    }
+    historyCache = {};
+    renderAll();
+    setDataMsg('✓ importati dati di '+count+' voci');
+  }catch(e){
+    setDataMsg('⚠ file non valido: '+e.message, true);
+  }
+}
+
+function bindDataButtons(){
+  document.getElementById('exportBtn').onclick = exportData;
+  const fileInput = document.getElementById('importFile');
+  document.getElementById('importBtn').onclick = ()=> fileInput.click();
+  fileInput.onchange = ()=>{
+    if(fileInput.files && fileInput.files[0]) importData(fileInput.files[0]);
+    fileInput.value = '';
+  };
+}
+
+async function boot(){
+  await checkStorage();
+  bindDataButtons();
+  renderAll();
+}
+
+boot();
+</script>
+
+</body>
+</html>
