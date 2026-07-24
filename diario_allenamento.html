@@ -10,146 +10,177 @@
   :root{
     --bg:#14151A; --card:#1E2025; --card-border:#2A2C33;
     --text:#EDEAE2; --text-dim:#9296A0;
-    --gold:#D9A94C; --teal:#4FA694; --rust:#C9713D; --field:#26282E;
+    --gold:#D9A94C; --teal:#4FA694; --rust:#C9713D; --field:#26282E; --blue:#5B8DEF;
   }
   *{box-sizing:border-box;}
-  body{margin:0;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;padding:0 0 70px;}
-  .wrap{max-width:640px;margin:0 auto;padding:0 18px;}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;padding:0 0 56px;}
+  .wrap{max-width:640px;margin:0 auto;padding:0 16px;}
 
-  header{padding:32px 18px 18px;text-align:center;border-bottom:1px solid var(--card-border);}
-  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);margin:0 0 8px;}
-  h1{font-family:'Oswald',sans-serif;font-weight:700;font-size:26px;margin:0 0 4px;text-transform:uppercase;}
-  .sub{color:var(--text-dim);font-size:13px;margin:0 0 16px;}
+  header{padding:22px 16px 12px;text-align:center;border-bottom:1px solid var(--card-border);}
+  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);margin:0 0 6px;}
+  h1{font-family:'Oswald',sans-serif;font-weight:700;font-size:22px;margin:0 0 3px;text-transform:uppercase;}
+  .sub{color:var(--text-dim);font-size:12px;margin:0 0 10px;}
 
   /* WEEK SELECTOR */
-  .weeks{display:flex;gap:6px;overflow-x:auto;padding:2px 18px 6px;justify-content:center;flex-wrap:wrap;}
+  .weeks{display:flex;gap:5px;overflow-x:auto;padding:2px 16px 5px;justify-content:center;flex-wrap:wrap;}
   .wchip{
-    font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;
-    padding:7px 11px;border-radius:20px;border:1px solid var(--card-border);
+    font-family:'IBM Plex Mono',monospace;font-size:11.5px;font-weight:600;
+    padding:6px 10px;border-radius:20px;border:1px solid var(--card-border);
     background:transparent;color:var(--text-dim);cursor:pointer;flex:none;
   }
   .wchip.active{background:var(--gold);color:#14151A;border-color:var(--gold);}
   .wchip.tag-test{color:var(--rust);}
   .wchip.tag-test.active{background:var(--rust);color:#14151A;border-color:var(--rust);}
+  .wchip.tag-vacanza{color:var(--teal);}
+  .wchip.tag-vacanza.active{background:var(--teal);color:#14151A;border-color:var(--teal);}
 
-  .week-info{text-align:center;margin:10px 0 0;}
+  .week-info{text-align:center;margin:6px 0 0;}
   .week-badge{
-    display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:11.5px;
-    padding:5px 12px;border-radius:20px;margin-top:4px;
+    display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:11px;
+    padding:4px 11px;border-radius:20px;margin-top:3px;
   }
   .week-badge.scarico{color:var(--rust);border:1px solid rgba(201,113,61,.4);background:rgba(201,113,61,.08);}
   .week-badge.test{color:#e05252;border:1px solid rgba(224,82,82,.4);background:rgba(224,82,82,.08);}
+  .week-badge.vacanza{color:var(--teal);border:1px solid rgba(79,166,148,.4);background:rgba(79,166,148,.08);}
   .week-badge.normal{color:var(--text-dim);border:1px solid var(--card-border);}
 
   /* DAY */
-  .day{margin:26px 0;}
-  .day-head{display:flex;align-items:center;gap:14px;margin-bottom:12px;}
+  .day{margin:16px 0;}
+  .day-head{display:flex;align-items:center;gap:11px;margin-bottom:8px;}
   .plate{
-    width:44px;height:44px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;
+    width:38px;height:38px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;
     background:radial-gradient(circle at 35% 30%, #3a3c43, #202227 70%);
     border:2px solid #3a3c43;box-shadow:inset 0 0 0 3px #14151A, inset 0 0 0 4px #34363d;
-    font-family:'Oswald',sans-serif;font-weight:600;font-size:13px;color:var(--gold);
+    font-family:'Oswald',sans-serif;font-weight:600;font-size:12px;color:var(--gold);
   }
   .plate.cardio{color:var(--teal);}
   .day-titles{flex:1;}
-  .day-name{font-family:'Oswald',sans-serif;font-size:18px;font-weight:600;text-transform:uppercase;}
-  .day-meta{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-dim);margin-top:2px;}
+  .day-name{font-family:'Oswald',sans-serif;font-size:16px;font-weight:600;text-transform:uppercase;}
+  .day-meta{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--text-dim);margin-top:1px;}
 
-  .card{background:var(--card);border:1px solid var(--card-border);border-radius:14px;overflow:hidden;}
-  .ex{padding:14px 16px;border-bottom:1px solid var(--card-border);}
+  .card{background:var(--card);border:1px solid var(--card-border);border-radius:12px;overflow:hidden;}
+  .day-vacanza .card{border-color:rgba(79,166,148,.4);background:rgba(79,166,148,.04);}
+  .day-vacanza .plate{border-color:#2f4a45;box-shadow:inset 0 0 0 3px #14151A, inset 0 0 0 4px rgba(79,166,148,.3);}
+  .day-vacanza .plate.cardio{color:var(--teal);}
+  .day-vacanza .day-name{color:var(--teal);}
+  .ex{padding:10px 14px;border-bottom:1px solid var(--card-border);}
   .ex:last-child{border-bottom:none;}
-  .ex-name{font-weight:600;font-size:15px;margin:0 0 2px;}
-  .ex-note{font-size:12px;color:var(--text-dim);margin:0 0 8px;}
+
+  .ex-warmup, .ex-prep{padding:8px 14px;background:rgba(255,255,255,.015);}
+  .ex-kicker{
+    display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:9.5px;font-weight:600;
+    letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:10px;margin-bottom:4px;
+  }
+  .ex-warmup .ex-kicker{color:var(--text-dim);background:rgba(255,255,255,.06);}
+  .ex-prep .ex-kicker{color:var(--blue);background:rgba(91,141,239,.1);}
+  .ex-warmup .ex-name, .ex-prep .ex-name{font-size:13px;font-weight:500;margin:0 0 2px;}
+  .ex-warmup .ex-note, .ex-prep .ex-note{font-size:11px;margin:0 0 2px;}
+  .ex-scheme-mini{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--text-dim);}
+  .ex-prep{border-left:2px solid var(--blue);}
+  .ex-warmup{border-left:2px solid var(--card-border);}
+  .ex-name{font-weight:600;font-size:14px;margin:0 0 2px;}
+  .ex-head-row{display:flex;align-items:baseline;justify-content:space-between;gap:8px;}
+  .ex-head-row .ex-name{margin:0;}
+  .ex-rest{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--teal);white-space:nowrap;flex:none;}
+  .ex-note{font-size:11.5px;color:var(--text-dim);margin:2px 0 5px;}
   .ex-scheme{
-    font-family:'IBM Plex Mono',monospace;font-size:13.5px;font-weight:600;color:var(--gold);
-    white-space:pre-line;line-height:1.5;background:rgba(217,169,76,.06);
-    border:1px solid rgba(217,169,76,.18);border-radius:8px;padding:8px 10px;margin-bottom:10px;
+    font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;color:var(--gold);
+    white-space:pre-line;line-height:1.45;background:rgba(217,169,76,.06);
+    border:1px solid rgba(217,169,76,.18);border-radius:8px;padding:6px 9px;margin-bottom:7px;
   }
   .ex-scheme.empty{color:var(--text-dim);font-weight:500;font-style:italic;background:transparent;border-style:dashed;}
-  .ex-tags{display:flex;gap:6px;margin-bottom:10px;}
-  .tag{font-family:'IBM Plex Mono',monospace;font-size:10.5px;padding:3px 8px;border-radius:20px;background:rgba(79,166,148,.1);color:var(--teal);border:1px solid rgba(79,166,148,.25);}
 
-  .log-row{display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap;align-items:center;}
+  .log-row{display:flex;gap:5px;margin-bottom:5px;flex-wrap:wrap;align-items:center;}
   .log-row input{
     flex:1;min-width:0;background:var(--field);border:1px solid var(--card-border);
-    border-radius:8px;padding:8px 9px;color:var(--text);font-size:13px;font-family:'Inter',sans-serif;
+    border-radius:7px;padding:7px 8px;color:var(--text);font-size:12.5px;font-family:'Inter',sans-serif;
   }
-  .log-row input.carico-compact{flex:0 0 78px;width:78px;padding:8px 7px;}
+  .log-row input.carico-compact{flex:0 0 72px;width:72px;padding:7px 6px;}
   .log-row input::placeholder{color:#5c5e66;}
-  .log-note{width:100%;background:var(--field);border:1px solid var(--card-border);border-radius:8px;
-    padding:8px 9px;color:var(--text);font-size:13px;font-family:'Inter',sans-serif;margin-bottom:6px;}
+  .log-note{width:100%;background:var(--field);border:1px solid var(--card-border);border-radius:7px;
+    padding:7px 8px;color:var(--text);font-size:12.5px;font-family:'Inter',sans-serif;margin-bottom:5px;}
 
   .save-hint{
-    font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--teal);
-    height:14px;margin-bottom:8px;opacity:0;transition:opacity .3s ease;
+    font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--teal);
+    height:12px;margin-bottom:5px;opacity:0;transition:opacity .3s ease;
   }
   .save-hint.show{opacity:1;}
   .save-hint.err{color:var(--rust);}
 
   .storage-warn{
     display:none;background:rgba(201,113,61,.1);border:1px solid rgba(201,113,61,.4);
-    border-radius:12px;padding:12px 14px;margin:16px 0 0;font-size:12.5px;color:var(--rust);line-height:1.5;
+    border-radius:12px;padding:10px 13px;margin:14px 0 0;font-size:12px;color:var(--rust);line-height:1.45;
   }
   .storage-warn.show{display:block;}
   .storage-status{
-    font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--teal);
-    margin:-10px 0 14px;
+    font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--teal);
+    margin:-7px 0 10px;
   }
 
-  .data-btns{display:flex;gap:8px;justify-content:center;margin-top:16px;}
+  .data-btns{display:flex;gap:8px;justify-content:center;margin-top:14px;}
   .data-btn{
-    font-family:'IBM Plex Mono',monospace;font-size:11.5px;font-weight:600;
+    font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;
     background:var(--field);color:var(--text-dim);border:1px solid var(--card-border);
-    border-radius:20px;padding:8px 14px;cursor:pointer;
+    border-radius:20px;padding:7px 13px;cursor:pointer;
   }
   .data-btn:active{background:var(--card-border);}
   .data-msg{
-    text-align:center;font-family:'IBM Plex Mono',monospace;font-size:11px;
-    color:var(--teal);margin-top:8px;min-height:14px;
+    text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10.5px;
+    color:var(--teal);margin-top:6px;min-height:13px;
   }
   .data-msg.err{color:var(--rust);}
 
-  .spark-block{margin-bottom:10px;}
-  .spark-svg{width:100%;height:46px;display:block;}
-  .spark-range{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-dim);margin-top:2px;}
-  .spark-label{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;}
+  .spark-block{margin-bottom:7px;}
+  .spark-svg{width:100%;height:40px;display:block;}
+  .spark-range{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--text-dim);margin-top:2px;}
+  .spark-label{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px;}
 
   .samelast-btn{
-    display:none;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--teal);
-    background:none;border:1px solid rgba(79,166,148,.35);border-radius:20px;padding:5px 10px;
-    cursor:pointer;margin-bottom:8px;
+    display:none;font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--teal);
+    background:none;border:1px solid rgba(79,166,148,.35);border-radius:20px;padding:4px 9px;
+    cursor:pointer;margin-bottom:6px;
   }
   .samelast-btn:active{opacity:.7;}
 
   .reps-adjust{display:flex;gap:4px;flex:none;}
   .reps-btn{
-    width:22px;height:22px;border-radius:6px;border:1px solid var(--card-border);background:var(--field);
-    color:var(--text-dim);font-family:'IBM Plex Mono',monospace;font-size:14px;line-height:1;cursor:pointer;
+    width:20px;height:20px;border-radius:6px;border:1px solid var(--card-border);background:var(--field);
+    color:var(--text-dim);font-family:'IBM Plex Mono',monospace;font-size:13px;line-height:1;cursor:pointer;
     display:flex;align-items:center;justify-content:center;padding:0;
   }
   .reps-btn:active{background:var(--card-border);}
-  .reps-boxes{display:flex;flex-wrap:wrap;gap:4px;flex:1;min-width:80px;}
+  .reps-boxes{display:flex;flex-wrap:wrap;gap:4px;flex:1;min-width:76px;}
   .rep-box, .log-row .rep-box{
-    width:34px;height:34px;text-align:center;background:var(--field);border:1px solid var(--card-border);
-    border-radius:8px;color:var(--text);font-size:14px;font-family:'IBM Plex Mono',monospace;padding:0;
-    flex:none!important;min-width:34px;
+    width:32px;height:32px;text-align:center;background:var(--field);border:1px solid var(--card-border);
+    border-radius:7px;color:var(--text);font-size:13px;font-family:'IBM Plex Mono',monospace;padding:0;
+    flex:none!important;min-width:32px;
   }
 
   /* BODYWEIGHT */
-  .bw-card{background:var(--card);border:1px solid var(--card-border);border-radius:14px;padding:16px;margin:22px 0;}
-  .bw-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
-  .bw-title{font-family:'Oswald',sans-serif;font-size:16px;font-weight:600;text-transform:uppercase;}
-  .bw-latest{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--gold);margin-left:auto;}
+  .bw-card{background:var(--card);border:1px solid var(--card-border);border-radius:12px;padding:13px 14px;margin:14px 0;}
+  .bw-head{display:flex;align-items:center;gap:9px;margin-bottom:8px;}
+  .bw-title{font-family:'Oswald',sans-serif;font-size:15px;font-weight:600;text-transform:uppercase;}
+  .bw-latest{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--gold);margin-left:auto;}
 
-  .note-box{background:var(--card);border:1px solid var(--card-border);border-radius:14px;padding:16px 18px;margin-top:30px;font-size:13px;color:var(--text-dim);line-height:1.6;}
+  .note-box{background:var(--card);border:1px solid var(--card-border);border-radius:12px;padding:13px 15px;margin-top:20px;font-size:12.5px;color:var(--text-dim);line-height:1.5;}
   .note-box b{color:var(--text);}
-  footer{text-align:center;color:var(--text-dim);font-size:11px;margin-top:24px;font-family:'IBM Plex Mono',monospace;}
+
+  .vacation-card{
+    background:var(--card);border:1px solid rgba(79,166,148,.35);border-radius:12px;
+    padding:13px 15px;margin-bottom:16px;
+  }
+  .vacation-title{font-family:'Oswald',sans-serif;font-size:16px;font-weight:600;margin:0 0 9px;color:var(--teal);}
+  .vacation-session{margin-bottom:9px;}
+  .vacation-session-name{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.03em;margin-bottom:3px;}
+  .vacation-list{margin:0;padding-left:18px;font-size:13px;line-height:1.5;}
+  .vacation-list li{margin-bottom:2px;}
+  footer{text-align:center;color:var(--text-dim);font-size:10.5px;margin-top:18px;font-family:'IBM Plex Mono',monospace;}
 </style>
 </head>
 <body>
 
 <header>
-  <p class="eyebrow">Mesociclo 2 · Mattia Guareschi</p>
+  <p class="eyebrow">Mesociclo 3 · Mattia Guareschi</p>
   <h1>Diario Allenamento</h1>
   <p class="sub" id="dateRange">—</p>
   <p class="storage-status" id="storageStatus"></p>
@@ -192,12 +223,39 @@
 </div>
 
 <script>
-const PROGRAM = {"P1": {"title": "Giorno 1", "exercises": [{"id": "p1-1", "name": "Stacco", "note": "Massimale attuale: 110 kg", "rest": null, "weekly": {"7": "4×4 @ 72,5%\nPausa 2” appena staccato da terra", "8": "5×3 @ 77,5%\nTempo 3” fino al ginocchio", "9": "4×3 @ 75%\nDeficit 3 cm + fermo 1” a metà tibia", "10": "5×2 @ 82,5%\nStacco normale", "11": "4×4 @ 70%\nPausa 2” sotto il ginocchio", "12": "6×2 @ 85%", "13": "3×3 @ 72,5%\nTecnica pulita\nFermo 2” a metà tibia"}}, {"id": "p1-2", "name": "Panca 45 Bilanciere", "note": null, "rest": null, "weekly": {"7": "3 × 7–9", "8": "3 × 7–9", "9": "3 × 7–9", "10": "3 × 7–9", "11": "3 × 7–9", "12": "3 × 7–9", "13": "3 × 7–9"}}, {"id": "p1-3", "name": "Trazioni Supine", "note": null, "rest": null, "weekly": {"7": "1 ramping 3 + 3×8", "8": "1 ramping 2+ 2×10", "9": "ladder 1-2-3-4-5-6-7", "10": "1 AMRAP", "11": "1 AMRAP + 2×8", "12": "MAX REP finale", "13": null}}, {"id": "p1-4", "name": "Curl Bilanciere EZ", "note": null, "rest": "45''", "weekly": {"7": "3 × 7–9", "8": "3 × 7–9", "9": "3 × 7–9", "10": "3 × 7–9", "11": "3 × 7–9", "12": "3 × 7–9", "13": "3 × 7–9"}}]}, "P2": {"title": "Giorno 2", "exercises": [{"id": "p2-1", "name": "Adduzioni Scapolari", "note": null, "rest": null, "weekly": {"7": "3 × 10", "8": "3 × 10", "9": "3 × 10", "10": "3 × 10", "11": "3 × 10", "12": "3 × 10", "13": "3 × 10"}}, {"id": "p2-2", "name": "Squat Bilanciere", "note": "Massimale attuale: 95 kg", "rest": null, "weekly": {"7": "Squat con fermo in buca 2’’\n5×4×72,5%", "8": "Squat eccentrica 4’’\n4×4×75%", "9": "squat box fermo 2''\n5×3×77,5%", "10": "Squat normale\n5×3×80%", "11": "Squat fermo in buca 2’’\n4×2×85%", "12": "TEST 3RM\nRamping progressivo:\n\n5 reps @ 50%\n3 reps @ 60%\n3 reps @ 70%\n2 reps @ 77,5%\n1 reps @ 85%\ntentativi 3RM", "13": "Scarico tecnico\n3×3×65%"}}, {"id": "p2-3", "name": "T Bar", "note": null, "rest": null, "weekly": {"7": "3 × 7–9", "8": "3 × 7–9", "9": "3 × 7–9", "10": "3 × 7–9", "11": "3 × 7–9", "12": "3 × 7–9", "13": "3 × 7–9"}}, {"id": "p2-4", "name": "Pulley Triangolo", "note": null, "rest": null, "weekly": {"7": "3 × 7–9", "8": "3 × 7–9", "9": "3 × 7–9", "10": "3 × 7–9", "11": "3 × 7–9", "12": "3 × 7–9", "13": "3 × 7–9"}}, {"id": "p2-5", "name": "Rematore Manubrio Unilaterale", "note": null, "rest": null, "weekly": {"7": "2 × 7–9", "8": "2 × 7–9", "9": "2 × 7–9", "10": "2 × 7–9", "11": "2 × 7–9", "12": "2 × 7–9", "13": "2 × 7–9"}}, {"id": "p2-6", "name": "Hummer Curl", "note": null, "rest": null, "weekly": {"7": "3 × 7–9", "8": "3 × 7–9", "9": "3 × 7–9", "10": "3 × 7–9", "11": "3 × 7–9", "12": "3 × 7–9", "13": "3 × 7–9"}}]}, "P3": {"title": "Giorno 3", "exercises": [{"id": "p3-1", "name": "Trazioni Supine", "note": null, "rest": null, "weekly": {"7": "4×12", "8": "5×12", "9": "4×14", "10": "5×10 esplosive", "11": "3×15", "12": "2×10 leggere", "13": null}}, {"id": "p3-2", "name": "Spinte Manubri Panca 45", "note": null, "rest": null, "weekly": {"7": "3 × 7–9", "8": "3 × 7–9", "9": "3 × 7–9", "10": "3 × 7–9", "11": "3 × 7–9", "12": "3 × 7–9", "13": "3 × 7–9"}}, {"id": "p3-3", "name": "Piegamenti", "note": "Fermo 5''", "rest": null, "weekly": {"7": "4 × MAX", "8": "4 × MAX", "9": "4 × MAX", "10": "4 × MAX", "11": "4 × MAX", "12": "4 × MAX", "13": "4 × MAX"}}, {"id": "p3-4", "name": "Affondi Sul Posto", "note": null, "rest": null, "weekly": {"7": "3 × 20 TOTALI", "8": "3 × 20 TOTALI", "9": "3 × 20 TOTALI", "10": "3 × 20 TOTALI", "11": "3 × 20 TOTALI", "12": "3 × 20 TOTALI", "13": "3 × 20 TOTALI"}}]}, "P4": {"title": "Giorno 4", "exercises": [{"id": "p4-1", "name": "Squat Bilanciere", "note": null, "rest": null, "weekly": {"7": "Giorno medio\n\nFront squat\n4×6×65%", "8": "Giorno medio\n\nLow-bar squat\n5×5×67,5%", "9": "Giorno medio\n\nFront squat\n4×5×70%", "10": "Giorno medio\n\nLow-bar squat\n5×4×72,5%", "11": "Giorno medio\n\nFront squat\n4×3×75%", "12": "Giorno medio\n\nLow-bar squat\n3×3×70%", "13": "Giorno medio\n\nFront squat\n3×5×60%"}}, {"id": "p4-2", "name": "Military Press", "note": "Manubri, panca inclinata 70°", "rest": null, "weekly": {"7": "3 × 7–11", "8": "3 × 7–11", "9": "3 × 7–11", "10": "3 × 7–11", "11": "3 × 7–11", "12": "3 × 7–11", "13": "3 × 7–11"}}, {"id": "p4-3", "name": "Lat Machine", "note": null, "rest": null, "weekly": {"7": "3 × 7–9", "8": "3 × 7–9", "9": "3 × 7–9", "10": "3 × 7–9", "11": "3 × 7–9", "12": "3 × 7–9", "13": "3 × 7–9"}}, {"id": "p4-4", "name": "French Press Manubri Panca 30", "note": null, "rest": null, "weekly": {"7": "3 × 7–11", "8": "3 × 7–11", "9": "3 × 7–11", "10": "3 × 7–11", "11": "3 × 7–11", "12": "3 × 7–11", "13": "3 × 7–11"}}, {"id": "p4-5", "name": "Curl Panca 45", "note": null, "rest": null, "weekly": {"7": "3 × 7–11", "8": "3 × 7–11", "9": "3 × 7–11", "10": "3 × 7–11", "11": "3 × 7–11", "12": "3 × 7–11", "13": "3 × 7–11"}}]}, "C1": {"title": "Cardio", "exercises": [{"id": "c1-1", "name": "Corsa", "note": null, "rest": null, "weekly": {"7": "30-45' z2", "8": "5km zona 2", "9": "30-45' z2", "10": "5km zona 2", "11": "3km zona 2+2km z3", "12": "45'zona 2", "13": "scarico passivo"}}]}}
+const PROGRAM = {"P1":{"title":"Giorno 1","exercises":[{"id":"p1-w","name":"Riscaldamento Generale","type":"warmup","note":null,"rest":null,"weekly":{"1":"5' vogatore","2":"5' vogatore","3":"5' vogatore","4":"5' vogatore","5":"5' vogatore","6":"5' vogatore","7":"5' vogatore","8":"5' vogatore","9":"5' vogatore","10":"5' vogatore","11":"5' vogatore","12":"5' vogatore"}},{"id":"p1-p","name":"Hip Hinge con Elastico o Bilanciere Scarico","type":"prep","note":null,"rest":null,"weekly":{"1":"2 × 12","2":"2 × 12","3":"2 × 12","4":"2 × 12","5":"2 × 12","6":"2 × 12","7":"2 × 12","8":"2 × 12","9":"2 × 12","10":"2 × 12","11":"2 × 12","12":"2 × 12"}},{"id":"p1-1","name":"Stacco","note":"Massimale attuale: 120 kg","rest":"2–3'","weekly":{"1":"3 × 6 @ 65% (≈78kg)","2":"3 × 5 @ 70% (≈84kg)","4":"3 × 5 @ 70% (≈84kg)","5":"3 × 4 @ 77.5% (≈93kg)","8":"3 × 4 @ 72.5% (≈87kg)","9":"4 × 3 @ 80% (≈96kg)","10":"2 × 3 @ 60% (≈72kg)\nScarico, focus tecnica","11":"TEST 3RM — Ramping\n5@50%(60kg) · 3@60%(72kg) · 3@70%(84kg) · 2@77.5%(93kg) · 1@85%(102kg)\npoi tentativi 3RM","12":"3 × 5 @ 60% (≈72kg)\nPost-test, leggero"}},{"id":"p1-2","name":"Panca 45° + Piegamenti (superserie)","note":null,"rest":null,"weekly":{"1":"3 × 8–10","2":"3 × 8–10","4":"3 × 8–10","5":"3 × 8–10","8":"3 × 8–10","9":"3 × 8–10","10":"2 × 10\nLeggero","11":"2 × 8\nLeggero","12":"3 × 8–10"}},{"id":"p1-6","name":"Lat Machine (presa prona larga)","note":"Presa prona larga","rest":"75''","weekly":{"1":"3 × 12–15","2":"3 × 10–12","4":"3 × 8–10","5":"3 × 8–10","8":"3 × 10–12","9":"3 × 8–10","10":"2 × 12 leggero","11":"2 × 10 leggero","12":"3 × 10–12"}},{"id":"p1-5","name":"Hanging Leg Raise","note":null,"rest":"30–45''","weekly":{"1":"3 × 10–15","2":"3 × 10–15","4":"3 × 10–15","5":"3 × 10–15","8":"3 × 10–15","9":"3 × 10–15","10":"2 × 10\nLeggero","11":"2 × 10\nLeggero","12":"3 × 10–15"}},{"id":"p1-4","name":"Curl Bilanciere EZ (panca Scott)","note":null,"rest":"45''","weekly":{"1":"2 × 7–9","2":"2 × 7–9","4":"2 × 7–9","5":"2 × 7–9","8":"2 × 7–9","9":"2 × 7–9","10":"2 × 10\nLeggero","11":"2 × 8\nLeggero","12":"2 × 7–9"}}]},"P2":{"title":"Giorno 2","exercises":[{"id":"p2-w","name":"Riscaldamento Generale","type":"warmup","note":null,"rest":null,"weekly":{"1":"5' vogatore","2":"5' vogatore","3":"5' vogatore","4":"5' vogatore","5":"5' vogatore","6":"5' vogatore","7":"5' vogatore","8":"5' vogatore","9":"5' vogatore","10":"5' vogatore","11":"5' vogatore","12":"5' vogatore"}},{"id":"p2-p","name":"Air Squat + Mobilità Anche/Caviglia","type":"prep","note":null,"rest":null,"weekly":{"1":"2 × 15","2":"2 × 15","3":"2 × 15","4":"2 × 15","5":"2 × 15","6":"2 × 15","7":"2 × 15","8":"2 × 15","9":"2 × 15","10":"2 × 15","11":"2 × 15","12":"2 × 15"}},{"id":"p2-2","name":"Squat Bilanciere","note":"Massimale attuale: 100 kg","rest":"2–3'","weekly":{"1":"3 × 6 @ 65% (≈65kg)","2":"3 × 5 @ 70% (≈70kg)","4":"3 × 5 @ 70% (≈70kg)","5":"3 × 4 @ 77.5% (≈78kg)","8":"3 × 4 @ 72.5% (≈72kg)","9":"4 × 3 @ 80% (≈80kg)","10":"2 × 3 @ 60% (≈60kg)\nScarico, focus tecnica","11":"TEST 3RM — Ramping\n5@50%(50kg) · 3@60%(60kg) · 3@70%(70kg) · 2@77.5%(78kg) · 1@85%(85kg)\npoi tentativi 3RM","12":"3 × 5 @ 60% (≈60kg)\nPost-test, leggero"}},{"id":"p2-3","name":"T Bar (macchina)","note":null,"rest":"90''","weekly":{"1":"3 × 12–15","2":"3 × 10–12","4":"3 × 8–10","5":"3 × 8–10","8":"3 × 10–12","9":"3 × 8–10","10":"2 × 12 leggero","11":"2 × 10 leggero","12":"3 × 10–12"}},{"id":"p2-7","name":"Pulldown a Braccia Tese","note":null,"rest":"60''","weekly":{"1":"3 × 12–15\nPausa 1-2'' in massima contrazione ogni rep","2":"3 × 10–12\nPausa 1-2'' in massima contrazione ogni rep","4":"3 × 8–10\nPausa 1-2'' in massima contrazione ogni rep","5":"3 × 8–10\nPausa 1-2'' in massima contrazione ogni rep","8":"3 × 10–12\nPausa 1-2'' in massima contrazione ogni rep","9":"3 × 8–10\nPausa 1-2'' in massima contrazione ogni rep","10":"2 × 12\nScarico, leggero","11":"2 × 10\nLeggero","12":"3 × 10–12\nPausa 1-2'' in massima contrazione ogni rep"}},{"id":"p2-8","name":"Alzate Laterali","note":null,"rest":"60''","weekly":{"1":"3 × 12–15","2":"3 × 10–12","4":"3 × 8–10","5":"3 × 8–10\nUltima serie: drop set (-30% peso, a cedimento)","8":"3 × 10–12","9":"3 × 8–10\nUltima serie: drop set (-30% peso, a cedimento)","10":"2 × 12\nScarico, leggero","11":"2 × 10\nLeggero","12":"3 × 10–12"}},{"id":"p2-9","name":"Cable Crunch","note":null,"rest":"30–45''","weekly":{"1":"3 × 12–15","2":"3 × 12–15","4":"3 × 12–15","5":"3 × 12–15","8":"3 × 12–15","9":"3 × 12–15","10":"2 × 12\nLeggero","11":"2 × 12\nLeggero","12":"3 × 12–15"}}]},"P3":{"title":"Giorno 3","exercises":[{"id":"p4-w","name":"Riscaldamento Generale","type":"warmup","note":null,"rest":null,"weekly":{"1":"5' vogatore","2":"5' vogatore","3":"5' vogatore","4":"5' vogatore","5":"5' vogatore","6":"5' vogatore","7":"5' vogatore","8":"5' vogatore","9":"5' vogatore","10":"5' vogatore","11":"5' vogatore","12":"5' vogatore"}},{"id":"p3-p","name":"Adduzioni Scapolari","type":"prep","note":null,"rest":null,"weekly":{"1":"3 × 10","2":"3 × 10","3":"3 × 10","4":"3 × 10","5":"3 × 10","6":"3 × 10","7":"3 × 10","8":"3 × 10","9":"3 × 10","10":"3 × 10","11":"3 × 10","12":"3 × 10"}},{"id":"p3-1","name":"Trazioni","note":"Alterna presa: prona/supina a settimane alterne","rest":"90''","weekly":{"1":"Presa supina\n3 × 8–10","2":"Presa prona larga\n3 × 10–12","4":"Presa supina\n3 × 8–10","5":"Presa prona larga\n3 × 10–12\nUltima serie: AMRAP","8":"Presa supina\n3 × 8–10","9":"Presa prona larga\n3 × 10–12\nUltima serie: AMRAP","10":"Presa supina\n2 × 10\nScarico","11":"Presa prona larga\nMAX REP test","12":"Presa supina\n3 × 10–12"}},{"id":"p4-2","name":"Military Press Manubri","note":"Manubri, panca inclinata 70°","rest":"90''","weekly":{"1":"3 × 12–15","2":"3 × 10–12","4":"3 × 8–10","5":"3 × 8–10","8":"3 × 10–12","9":"3 × 8–10","10":"2 × 12\nScarico, leggero","11":"2 × 10\nLeggero","12":"3 × 10–12"}},{"id":"p4-3","name":"Lat Machine (presa mista larga)","note":"Presa mista larga","rest":"75''","weekly":{"1":"3 × 12–15","2":"3 × 10–12","4":"3 × 8–10","5":"3 × 8–10","8":"3 × 10–12","9":"4 × 8–10","10":"2 × 12\nScarico, leggero","11":"2 × 10\nLeggero","12":"3 × 10–12"}},{"id":"p4-6","name":"Pec Deck Inverso","note":null,"rest":"60''","weekly":{"1":"3 × 12–15","2":"3 × 10–12","4":"3 × 8–10","5":"3 × 8–10\nUltima serie: rest-pause (cedimento, pausa 15'', +3-5 rep)","8":"3 × 10–12","9":"3 × 8–10\nUltima serie: rest-pause (cedimento, pausa 15'', +3-5 rep)","10":"2 × 12\nScarico, leggero","11":"2 × 10\nLeggero","12":"3 × 10–12"}},{"id":"p4-5b","name":"Curl Panca 45°","note":null,"rest":"60''","weekly":{"1":"3 × 12–15","2":"3 × 10–12","4":"3 × 8–10","5":"3 × 8–10","8":"3 × 10–12","9":"3 × 8–10","10":"2 × 12 leggero","11":"2 × 10 leggero","12":"3 × 10–12"}},{"id":"p4-7b","name":"Push Down ai Cavi","note":"Evita movimento overhead (spalla)","rest":"60''","weekly":{"1":"3 × 12–15","2":"3 × 10–12","4":"3 × 8–10","5":"3 × 8–10","8":"3 × 10–12","9":"3 × 8–10","10":"2 × 12 leggero","11":"2 × 10 leggero","12":"3 × 10–12"}}]},"P4":{"title":"Giorno 4","exercises":[{"id":"p3-w","name":"Riscaldamento Generale","type":"warmup","note":null,"rest":null,"weekly":{"1":"5' vogatore","2":"5' vogatore","3":"5' vogatore","4":"5' vogatore","5":"5' vogatore","6":"5' vogatore","7":"5' vogatore","8":"5' vogatore","9":"5' vogatore","10":"5' vogatore","11":"5' vogatore","12":"5' vogatore"}},{"id":"p4-p","name":"Mobilità Toracica + Air Squat","type":"prep","note":null,"rest":null,"weekly":{"1":"2 × 15","2":"2 × 15","3":"2 × 15","4":"2 × 15","5":"2 × 15","6":"2 × 15","7":"2 × 15","8":"2 × 15","9":"2 × 15","10":"2 × 15","11":"2 × 15","12":"2 × 15"}},{"id":"p4-1","name":"Squat Bilanciere","note":"Giorno medio (vs P2)","rest":"2'","weekly":{"1":"3 × 6 @ 55% (≈55kg)","2":"3 × 6 @ 60% (≈60kg)","4":"3 × 6 @ 60% (≈60kg)","5":"2 × 4 @ 65% (≈65kg)","8":"2 × 4 @ 62% (≈62kg)","9":"2 × 3 @ 70% (≈70kg)","10":"2 × 3 @ 50% (≈50kg)\nScarico","11":"2 × 5 @ 55% (≈55kg)\nLeggero — il test è su P2","12":"2 × 5 @ 55% (≈55kg)"}},{"id":"p3-2","name":"Spinte Manubri 45° + Piegamenti (superserie)","note":null,"rest":null,"weekly":{"1":"3 × 12–15","2":"3 × 10–12","4":"3 × 8–10","5":"3 × 8–10","8":"3 × 10–12","9":"3 × 8–10","10":"2 × 12\nScarico, leggero","11":"2 × 10\nLeggero","12":"3 × 10–12"}},{"id":"p3-3","name":"Croci ai Cavi","note":"Se i cavi non sono liberi: Croci con Manubri (stesso schema)","rest":"60''","weekly":{"1":"3 × 12–15","2":"3 × 10–12","4":"3 × 8–10","5":"3 × 8–10\nPausa 1-2'' in massimo allungamento","8":"3 × 10–12","9":"3 × 8–10\nPausa 1-2'' in massimo allungamento","10":"2 × 12 leggero","11":"2 × 10 leggero","12":"3 × 10–12"}},{"id":"p3-5","name":"Leg Extension","note":null,"rest":"60''","weekly":{"1":"3 × 12–15","2":"3 × 10–12","4":"3 × 8–10","5":"3 × 8–10","8":"3 × 10–12","9":"3 × 8–10","10":"2 × 12\nScarico, leggero","11":"2 × 10\nLeggero","12":"3 × 10–12"}},{"id":"p3-6","name":"Leg Curl","note":null,"rest":"60''","weekly":{"1":"3 × 12–15","2":"3 × 10–12","4":"3 × 8–10","5":"3 × 8–10","8":"3 × 10–12","9":"3 × 8–10","10":"2 × 12\nScarico, leggero","11":"2 × 10\nLeggero","12":"3 × 10–12"}},{"id":"p3-7","name":"Plank","note":null,"rest":"30–45''","weekly":{"1":"3 × 40–60''","2":"3 × 40–60''","4":"3 × 40–60''","5":"3 × 40–60''","8":"3 × 40–60''","9":"3 × 40–60''","10":"2 × 30''\nLeggero","11":"2 × 30''\nLeggero","12":"3 × 40–60''"}}]},"C1":{"title":"Cardio","exercises":[{"id":"c1-1","name":"Corsa","note":"Passo stimato da un riferimento (6:00/km facile) — non da un vero test","rest":null,"weekly":{"1":"10' risc. + 3km @ 5:45–6:15/km + 2km @ 5:00–5:20/km + 5' defat. (~45')","2":"10' risc. + 4km @ 5:45–6:15/km + 2km @ 5:00–5:20/km + 5' defat. (~51')","3":"Sprint in salita\n10' camminata salita (risc.) + 8×(30'' sprint salita max / 90'' recupero camminando) + 10' defat. (~36')","4":"Rientro dopo montagna\n8' risc. + 6×(2' @ 5:00–5:20/km / 1' camminata) + 8' defat. (~34')","5":"8' risc. + 8×(2' @ 4:45–5:00/km / 1' camminata) + 8' defat. (~40')","6":"Sprint sabbia\n10' risc. + 8×(30'' sprint sabbia max / 90'' recupero) + 10' defat. (~36')\nOppure nuoto: rana lenta e tecnica, 5' ambientamento + 10-15' continuo, stop se fastidio a spalla","7":"Sprint sabbia (recuperi più corti)\n10' risc. + 10×(30'' sprint sabbia max / 60'' recupero) + 10' defat. (~35')\nOppure nuoto: rana lenta e tecnica, come S6","8":"Rientro dopo mare\n8' risc. + 6×(2' @ 5:00–5:20/km / 1' camminata) + 8' defat. (~34')","9":"Picco\n10' risc. + 10×(1' il più veloce possibile / 1' camminata) + 10' defat. (~40')","10":"Scarico\n20' continui @ 6:00–6:30/km (~30')","11":"Settimana test — leggero\n20' @ 6:00–6:30/km (~25')","12":"Post-test\n10' risc. + 4km @ 5:45–6:15/km + 2km @ 5:00–5:20/km + 5' defat. (~51')"}}]},"V3A":{"title":"Montagna — A: Spinta","exercises":[{"id":"v3a-1","name":"Piegamenti","note":null,"rest":null,"weekly":{"3":"4 × MAX"}},{"id":"v3a-2","name":"Piegamenti presa larga","note":null,"rest":null,"weekly":{"3":"3 × MAX"}},{"id":"v3a-3","name":"Pike push-up (spalle)","note":null,"rest":null,"weekly":{"3":"3 × 8–12"}},{"id":"v3a-4","name":"Plank","note":null,"rest":null,"weekly":{"3":"3 × 45–60''"}}]},"V3B":{"title":"Montagna — B: Trazione","exercises":[{"id":"v3b-1","name":"Trazioni presa prona larga","note":null,"rest":null,"weekly":{"3":"4 × MAX"}},{"id":"v3b-2","name":"Trazioni presa supina","note":null,"rest":null,"weekly":{"3":"3 × MAX"}},{"id":"v3b-3","name":"Hanging Leg Raise","note":null,"rest":null,"weekly":{"3":"3 × 10–15"}}]},"V3C":{"title":"Montagna — C: Gambe","exercises":[{"id":"v3c-1","name":"Squat Bulgaro a corpo libero","note":null,"rest":null,"weekly":{"3":"4 × 12 per gamba"}},{"id":"v3c-2","name":"Affondi Camminati","note":null,"rest":null,"weekly":{"3":"3 × 12 per gamba"}},{"id":"v3c-3","name":"Ponte Monopodalico","note":"Sostituisce lo stacco","rest":null,"weekly":{"3":"3 × 12 per gamba"}}]},"V67A":{"title":"Mare — A: Spinta","exercises":[{"id":"v67a-1","name":"Piegamenti","note":null,"rest":null,"weekly":{"6":"4 × MAX","7":"4 × MAX (sali leggermente se ti senti bene)"}},{"id":"v67a-2","name":"Piegamenti piedi rialzati","note":null,"rest":null,"weekly":{"6":"3 × MAX","7":"3 × MAX"}},{"id":"v67a-3","name":"Dip tra due lettini","note":"Se ci sono","rest":null,"weekly":{"6":"3 × MAX","7":"3 × MAX"}}]},"V67B":{"title":"Mare — B: Gambe + Core","exercises":[{"id":"v67b-1","name":"Squat a corpo libero (lento/jump)","note":null,"rest":null,"weekly":{"6":"4 × 20–25","7":"4 × 20–25"}},{"id":"v67b-2","name":"Affondi Camminati","note":"Sulla sabbia se puoi","rest":null,"weekly":{"6":"3 × 12 per gamba","7":"3 × 12 per gamba"}},{"id":"v67b-3","name":"Ponte Monopodalico","note":null,"rest":null,"weekly":{"6":"3 × 15 per gamba","7":"3 × 15 per gamba"}},{"id":"v67b-4","name":"Plank","note":null,"rest":null,"weekly":{"6":"3 × 45–60''","7":"3 × 45–60''"}}]},"V67C":{"title":"Mare — C: Schiena/Core","exercises":[{"id":"v67c-1","name":"Superman","note":"Estensioni lombari","rest":null,"weekly":{"6":"3 × 15","7":"3 × 15"}},{"id":"v67c-2","name":"Y-T-W proni","note":"Deltoide posteriore","rest":null,"weekly":{"6":"3 × 12","7":"3 × 12"}}]}};
 ;
 
-const WEEK_STARTS = {7:'2026-06-08',8:'2026-06-15',9:'2026-06-22',10:'2026-06-29',11:'2026-07-06',12:'2026-07-13',13:'2026-07-20'};
-const WEEK_TAGS = {11:'scarico',12:'test',13:'post-test'};
-const WEEK_LABELS = {11:'SCARICO ATTIVO',12:'SETTIMANA DI TEST',13:'POST-TEST — RIR2 compound, RIR1 accessori'};
+const WEEK_STARTS = {1:'2026-07-27',2:'2026-08-03',3:'2026-08-10',4:'2026-08-17',5:'2026-08-24',6:'2026-08-31',7:'2026-09-07',8:'2026-09-14',9:'2026-09-21',10:'2026-09-28',11:'2026-10-05',12:'2026-10-12'};
+const WEEK_TAGS = {3:'vacanza',6:'vacanza',7:'vacanza',10:'scarico',11:'test',12:'post-test'};
+const WEEK_LABELS = {3:'🏔️ MONTAGNA — solo sbarra',6:'🏖️ MARE — no attrezzatura (sett. 1)',7:'🏖️ MARE — no attrezzatura (sett. 2)',10:'SCARICO ATTIVO',11:'SETTIMANA DI TEST',12:'POST-TEST — RIR2 compound, RIR1 accessori'};
+
+const VACATION_WEEKS = {
+  3: {
+    title: '🏔️ Montagna — hai solo la sbarra',
+    sessions: [
+      {name:'A — Spinta', items:["Piegamenti — 4 × MAX","Piegamenti presa larga — 3 × MAX","Pike push-up (spalle) — 3 × 8–12","Plank — 3 × 45–60''"]},
+      {name:'B — Trazione (sfrutti la sbarra)', items:["Trazioni presa prona larga — 4 × MAX","Trazioni presa supina — 3 × MAX","Hanging leg raise — 3 × 10–15"]},
+      {name:'C — Gambe + Cardio', items:["Squat bulgaro a corpo libero — 4 × 12 per gamba","Affondi camminati — 3 × 12 per gamba","Ponte monopodalico (sostituisce lo stacco) — 3 × 12 per gamba"]},
+    ]
+  },
+  6: {
+    title: '🏖️ Mare — settimana 1, nessuna attrezzatura',
+    sessions: [
+      {name:'A — Spinta', items:["Piegamenti — 4 × MAX","Piegamenti piedi rialzati — 3 × MAX","Dip tra due lettini (se ci sono) — 3 × MAX"]},
+      {name:'B — Gambe + Core', items:["Squat a corpo libero (lento/jump) — 4 × 20–25","Affondi camminati (sulla sabbia se puoi) — 3 × 12 per gamba","Ponte monopodalico — 3 × 15 per gamba","Plank — 3 × 45–60''"]},
+      {name:'C — Schiena/Core', items:["Superman (estensioni lombari) — 3 × 15","Y-T-W proni (deltoide posteriore) — 3 × 12"]},
+    ]
+  },
+  7: {
+    title: '🏖️ Mare — settimana 2, nessuna attrezzatura',
+    sessions: [
+      {name:'A — Spinta', items:["Piegamenti — 4 × MAX (sali leggermente se ti senti bene)","Piegamenti piedi rialzati — 3 × MAX","Dip tra due lettini (se ci sono) — 3 × MAX"]},
+      {name:'B — Gambe + Core', items:["Squat a corpo libero (lento/jump) — 4 × 20–25","Affondi camminati — 3 × 12 per gamba","Ponte monopodalico — 3 × 15 per gamba","Plank — 3 × 45–60''"]},
+      {name:'C — Schiena/Core', items:["Superman — 3 × 15","Y-T-W proni — 3 × 12"]},
+    ]
+  },
+};
 
 let currentWeek = detectCurrentWeek();
 
@@ -396,7 +454,7 @@ function renderWeekSelector(){
   el.innerHTML = '';
   Object.keys(WEEK_STARTS).map(Number).sort((a,b)=>a-b).forEach(wk=>{
     const chip = document.createElement('button');
-    chip.className = 'wchip'+(wk===currentWeek?' active':'')+(WEEK_TAGS[wk]==='test'?' tag-test':'');
+    chip.className = 'wchip'+(wk===currentWeek?' active':'')+(WEEK_TAGS[wk]==='test'?' tag-test':'')+(WEEK_TAGS[wk]==='vacanza'?' tag-vacanza':'');
     chip.textContent = 'S'+wk;
     chip.onclick = ()=>{ currentWeek = wk; renderAll(); };
     el.appendChild(chip);
@@ -409,24 +467,66 @@ function renderWeekInfo(){
   const tag = WEEK_TAGS[currentWeek];
   if(tag){
     badge.textContent = WEEK_LABELS[currentWeek];
-    badge.className = 'week-badge '+(tag==='test'?'test':'scarico');
+    badge.className = 'week-badge '+(tag==='test' ? 'test' : (tag==='vacanza' ? 'vacanza' : 'scarico'));
   } else {
-    badge.textContent = 'Settimana '+currentWeek+' di 13';
+    const weeks = Object.keys(WEEK_STARTS).map(Number).sort((a,b)=>a-b);
+    badge.textContent = 'Settimana '+currentWeek+' di '+weeks.length+' (mesociclo 3)';
     badge.className = 'week-badge normal';
   }
 }
 
+function buildVacationBlock(vac){
+  const card = document.createElement('div');
+  card.className = 'vacation-card';
+  card.innerHTML = `
+    <p class="vacation-title">${vac.title}</p>
+    ${vac.sessions.map(s => `
+      <div class="vacation-session">
+        <div class="vacation-session-name">${s.name}</div>
+        <ul class="vacation-list">${s.items.map(i=>`<li>${i}</li>`).join('')}</ul>
+      </div>
+    `).join('')}
+    <input type="text" placeholder="Come è andata? (facoltativo)" class="log-note" id="vacNote">
+    <div class="save-hint" id="vacHint"></div>
+  `;
+  const noteEl = card.querySelector('#vacNote');
+  const hintEl = card.querySelector('#vacHint');
+  const key = 'vacation-'+currentWeek;
+  loadHistory(key).then(data=>{
+    noteEl.value = (data['1'] && data['1'].note) || '';
+  });
+  let t;
+  const persistNote = async ()=>{
+    const data = await loadHistory(key);
+    const note = noteEl.value.trim();
+    if(note) data['1'] = {note, date: todayISO()}; else delete data['1'];
+    const ok = await saveHistory(key, data);
+    hintEl.textContent = ok ? '✓ salvato' : '⚠ non salvato';
+    hintEl.classList.toggle('err', !ok);
+    hintEl.classList.add('show');
+    clearTimeout(hintEl._t);
+    hintEl._t = setTimeout(()=>hintEl.classList.remove('show'), 1200);
+  };
+  noteEl.addEventListener('input', ()=>{ clearTimeout(t); t=setTimeout(persistNote,600); });
+  noteEl.addEventListener('blur', ()=>{ clearTimeout(t); persistNote(); });
+  return card;
+}
+
+const VAC_GROUPS = {3:['V3A','V3B','V3C'], 6:['V67A','V67B','V67C'], 7:['V67A','V67B','V67C']};
+
 async function renderDays(){
   const el = document.getElementById('days');
   el.innerHTML = '';
-  const dayKeys = ['P1','P2','P3','P4','C1'];
+  const vacGroups = VAC_GROUPS[currentWeek];
+  const dayKeys = vacGroups ? [...vacGroups,'C1'] : ['P1','P2','C1','P3','P4'];
   for(const key of dayKeys){
     const day = PROGRAM[key];
     const dayEl = document.createElement('div');
     dayEl.className = 'day';
+    const plateLabel = vacGroups ? key.replace(/^V\d+/,'') : key;
     dayEl.innerHTML = `
       <div class="day-head">
-        <div class="plate${key==='C1'?' cardio':''}">${key}</div>
+        <div class="plate${key==='C1'?' cardio':''}">${plateLabel}</div>
         <div class="day-titles">
           <div class="day-name">${day.title}</div>
           <div class="day-meta" id="meta-${key}">—</div>
@@ -437,15 +537,30 @@ async function renderDays(){
     el.appendChild(dayEl);
     const cardEl = dayEl.querySelector('#card-'+key);
     for(const ex of day.exercises){
+      if(ex.type==='warmup' || ex.type==='prep'){
+        const exEl = document.createElement('div');
+        exEl.className = 'ex ex-'+ex.type;
+        const scheme = ex.weekly[String(currentWeek)];
+        exEl.innerHTML = `
+          <span class="ex-kicker">${ex.type==='warmup' ? '🔥 Riscaldamento' : '⚙️ Preparazione'}</span>
+          <p class="ex-name">${ex.name}</p>
+          ${ex.note ? `<p class="ex-note">${ex.note}</p>` : ''}
+          <div class="ex-scheme-mini">${scheme || ''}</div>
+        `;
+        cardEl.appendChild(exEl);
+        continue;
+      }
       const isCardio = ex.id.startsWith('c');
       const exEl = document.createElement('div');
       exEl.className = 'ex';
       const scheme = ex.weekly[String(currentWeek)];
       exEl.innerHTML = `
-        <p class="ex-name">${ex.name}</p>
+        <div class="ex-head-row">
+          <p class="ex-name">${ex.name}</p>
+          ${ex.rest ? `<span class="ex-rest">${ex.rest}</span>` : ''}
+        </div>
         ${ex.note ? `<p class="ex-note">${ex.note}</p>` : ''}
         <div class="ex-scheme${scheme?'':' empty'}">${scheme ? scheme.replace(/\n/g,'<br>') : 'Nessuna indicazione per questa settimana'}</div>
-        ${ex.rest ? `<div class="ex-tags"><span class="tag">rest ${ex.rest}</span></div>` : ''}
         <button class="samelast-btn">↻ copia settimana precedente</button>
         <div class="log-row">
           <input type="text" placeholder="${isCardio?'Distanza':'Carico'}" class="in-carico${isCardio?'':' carico-compact'}">
