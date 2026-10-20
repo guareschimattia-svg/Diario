@@ -108,6 +108,8 @@
   }
   .ex-tag-warmprep{color:#F2A93B;background:rgba(242,169,59,.12);}
   .ex-tag-fond{color:#E8231A;background:rgba(232,35,26,.12);}
+  .ex-tag-category{color:var(--cat-color);background:color-mix(in srgb,var(--cat-color) 12%,transparent);}
+  .session-ex-name .ex-tag{display:table;margin-top:5px;}
   .ex-swipe-wrap{position:relative;overflow:hidden;border-radius:8px;touch-action:none;}
   .ex-swipe-wrap.dragging{overflow:visible;z-index:5;box-shadow:0 8px 24px rgba(0,0,0,.6);transform:scale(1.04);}
   .ex-swipe-wrap.dragging .session-ex-row{background:var(--field);border-color:var(--gold);border-width:2px;}
@@ -243,6 +245,8 @@
     padding:5px 0;border-radius:13px;border:1px solid transparent;
   }
   .day-cell.selectable{cursor:pointer;}
+  .day-cell.deferred-day{border-color:var(--rust);border-style:dashed;}
+  .day-cell.deferred-day .day-cell-num{color:var(--rust);}
   .day-cell-head{
     display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 5px;border-radius:11px;width:100%;
   }
@@ -379,6 +383,33 @@
   .log-note{flex:1 1 100%;width:auto;background:var(--field);border:1px solid var(--card-border);border-radius:7px;
     padding:7px 8px;color:var(--text);font-size:16px;font-family:'Inter',sans-serif;margin-bottom:0;}
 
+  #miniActionOverlay,#confirmOverlay,#namePromptOverlay,#renameDayOverlay,#noteReadOverlay,#newSessionOverlay{z-index:100;}
+  #miniActionModal,#confirmModal,#namePromptModal,#renameDayModal,#noteReadModal,#newSessionModal{z-index:101;}
+  .recurrence-body{max-width:600px;width:100%;margin:0 auto;gap:16px;}
+  .recurrence-group{background:var(--card);border:1px solid var(--card-border);border-radius:14px;overflow:hidden;flex:none;}
+  .recurrence-field{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:54px;padding:10px 14px;border-bottom:1px solid var(--card-border);font-size:15px;}
+  .recurrence-field:last-child{border-bottom:0;}
+  .recurrence-field>span{flex:none;}
+  .recurrence-field input,.recurrence-field select{min-width:0;max-width:65%;text-align:right;border:0;background:var(--field);color:var(--text);font-family:'Inter',sans-serif;font-size:16px;border-radius:8px;padding:8px;}
+  .recurrence-field input[type=text]{width:65%;}
+  .recurrence-field input[type=number]{width:58px;flex:none;}
+  .recurrence-field select{cursor:pointer;}
+  .recurrence-custom{padding:4px 14px 0;}
+  .recurrence-custom .recurrence-field{padding-left:0;padding-right:0;gap:6px;}
+  .recurrence-custom .ef-cat-row{justify-content:space-between;gap:4px;}
+  .recurrence-custom .ef-cat-btn{padding:9px 7px;flex:1;font-size:12px;}
+  .recurrence-note{font-size:12px;line-height:1.6;color:var(--text-dim);margin:0;}
+  .recurrence-preview{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+  .recurrence-preview span{padding:7px 9px;border:1px solid var(--card-border);border-radius:9px;font-size:12px;color:var(--text-dim);}
+  .recurrence-error{font-size:13px;line-height:1.5;color:var(--rust);min-height:18px;margin:0;}
+  #sessionDetailsCustom[hidden],#sessionDetailsEndRow[hidden],#sessionDetailsEnd[hidden]{display:none;}
+  .recurrence-end-date:not(:has(input:not([hidden]))){display:none;}
+  .sequence-empty{padding:20px;text-align:center;color:var(--text-dim);font-size:14px;line-height:1.6;}
+  .previous-load{
+    font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-dim);
+    line-height:1.45;margin:4px 0 2px;overflow-wrap:anywhere;
+  }
+  .previous-load[hidden]{display:none;}
   .save-hint{
     font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--teal);
     height:12px;margin-bottom:5px;opacity:0;transition:opacity .3s ease;
@@ -422,12 +453,6 @@
   .data-msg.err{color:var(--rust);}
 
 
-  .samelast-btn{
-    display:none;font-size:15px;color:var(--teal);
-    background:none;border:1px solid rgba(79,166,148,.35);border-radius:7px;
-    cursor:pointer;flex:none;width:34px;height:34px;align-items:center;justify-content:center;padding:0;
-  }
-  .samelast-btn:active{opacity:.7;}
 
   .note-btn{
     color:var(--text-dim);opacity:.4;
@@ -517,6 +542,8 @@
   </div>
   <div class="drawer-body">
     <button class="data-btn" id="exportBtn">⬇ Esporta dati</button>
+    <button class="data-btn" id="importBtn">⬆ Importa dati</button>
+    <input type="file" id="importFile" accept=".json,application/json" hidden>
     <button class="data-btn" id="guideBtn">❓ Guida rapida</button>
   </div>
 </div>
@@ -545,18 +572,6 @@
 <div class="mini-action-overlay" id="miniActionOverlay"></div>
 <div class="mini-action-modal" id="miniActionModal"></div>
 
-<div class="name-prompt-overlay" id="renameDayOverlay"></div>
-<div class="name-prompt-modal" id="renameDayModal">
-  <p class="name-prompt-title">Rinomina sessione</p>
-  <input type="text" id="renameDayInput" placeholder="Nome">
-  <label class="ns-label">Giorno</label>
-  <div class="ef-cat-row day-picker-row" id="renameDayPicker"></div>
-  <div class="name-prompt-actions">
-    <button class="ex-edit-save" id="renameDaySave" type="button">Salva</button>
-    <button class="ex-edit-cancel" id="renameDayCancel" type="button">Annulla</button>
-  </div>
-</div>
-
 <div class="name-prompt-overlay" id="confirmOverlay"></div>
 <div class="name-prompt-modal" id="confirmModal">
   <p class="name-prompt-title">Conferma</p>
@@ -569,7 +584,7 @@
 
 <div class="name-prompt-overlay" id="noteReadOverlay"></div>
 <div class="name-prompt-modal" id="noteReadModal">
-  <p class="name-prompt-title">Nota della settimana scorsa</p>
+  <p class="name-prompt-title">Nota della sessione precedente</p>
   <p class="confirm-text" id="noteReadText"></p>
   <div class="name-prompt-actions">
     <button class="ex-edit-save" id="noteReadClose" type="button">Chiudi</button>
@@ -626,31 +641,6 @@
   </div>
 </div>
 
-<div class="name-prompt-overlay" id="newSessionOverlay"></div>
-<div class="name-prompt-modal" id="newSessionModal">
-  <p class="name-prompt-title">Nuova sessione</p>
-  <input type="text" id="newSessionName" placeholder="Nome sessione" readonly>
-  <label class="ns-label">Ricorrenza</label>
-  <div class="ef-cat-row" id="newSessionRepeatRow">
-    <button class="ef-cat-btn" type="button" data-repeat="1">🔁 Ogni settimana</button>
-    <button class="ef-cat-btn" type="button" data-repeat="0">1️⃣ Solo questa settimana</button>
-  </div>
-  <label class="ns-label">Giorno</label>
-  <div class="ef-cat-row day-picker-row" id="newSessionDayRow">
-    <button class="ef-cat-btn" type="button" data-day="0">Lun</button>
-    <button class="ef-cat-btn" type="button" data-day="1">Mar</button>
-    <button class="ef-cat-btn" type="button" data-day="2">Mer</button>
-    <button class="ef-cat-btn" type="button" data-day="3">Gio</button>
-    <button class="ef-cat-btn" type="button" data-day="4">Ven</button>
-    <button class="ef-cat-btn" type="button" data-day="5">Sab</button>
-    <button class="ef-cat-btn" type="button" data-day="6">Dom</button>
-  </div>
-  <div class="name-prompt-actions">
-    <button class="ex-edit-save" id="newSessionSave" type="button">Crea</button>
-    <button class="ex-edit-cancel" id="newSessionCancel" type="button">Annulla</button>
-  </div>
-</div>
-
 <div class="fs-page" id="sessionModal">
   <div class="fs-head">
     <button class="fs-back" id="sessionModalClose" type="button">‹ Indietro</button>
@@ -669,6 +659,45 @@
   <div class="fs-body" id="exEditorBody"></div>
 </div>
 
+<div class="fs-page" id="sessionDetailsPage" role="dialog" aria-label="Sessione e ripetizione">
+  <div class="fs-head">
+    <button class="fs-back" id="sessionDetailsCancel" type="button">‹ Annulla</button>
+    <span class="fs-head-title" id="sessionDetailsTitle">Nuova sessione</span>
+    <button class="fs-save" id="sessionDetailsSave" type="button">Salva</button>
+  </div>
+  <div class="fs-body recurrence-body">
+    <section class="recurrence-group">
+      <label class="recurrence-field" for="sessionDetailsName"><span>Nome</span><input id="sessionDetailsName" type="text" placeholder="Nome della sessione" autocomplete="off"></label>
+      <label class="recurrence-field" for="sessionDetailsStart"><span>Inizio</span><input id="sessionDetailsStart" type="date"></label>
+    </section>
+    <section class="recurrence-group">
+      <label class="recurrence-field" for="sessionDetailsRepeat"><span>Ripetizione</span>
+        <select id="sessionDetailsRepeat">
+          <option value="none">Mai</option>
+          <option value="daily">Ogni giorno</option>
+          <option value="weekly">Ogni settimana</option>
+          <option value="biweekly">Ogni 2 settimane</option>
+          <option value="custom">Personalizzata</option>
+        </select>
+      </label>
+      <div id="sessionDetailsCustom" class="recurrence-custom" hidden>
+        <p class="ns-label">Ripeti nei giorni</p><div class="ef-cat-row" id="sessionDetailsDays"></div>
+        <label class="recurrence-field" for="sessionDetailsInterval"><span>Ogni</span><input id="sessionDetailsInterval" type="number" inputmode="numeric" min="1" max="365" step="1" value="1"><select id="sessionDetailsUnit" aria-label="Unità dell’intervallo"><option value="selectedDays">giorni selezionati</option><option value="weeks">settimane</option></select></label>
+      </div>
+      <div id="sessionDetailsEndRow">
+        <label class="recurrence-field" for="sessionDetailsEndMode"><span>Fine ripetizione</span><select id="sessionDetailsEndMode"><option value="never">Mai</option><option value="date">Il giorno…</option></select></label>
+        <label class="recurrence-field recurrence-end-date"><input id="sessionDetailsEnd" type="date" aria-label="Data di fine ripetizione" hidden></label>
+      </div>
+    </section>
+    <section class="recurrence-group">
+      <label class="recurrence-field" for="sessionDetailsSchedule"><span>Se salti</span><select id="sessionDetailsSchedule"><option value="rolling">Recupera e sposta il programma</option><option value="fixed">Giorni fissi, senza recupero</option></select></label>
+    </section>
+    <p class="recurrence-note" id="sessionDetailsHelp"></p>
+    <div id="sessionDetailsPreview"></div>
+    <p class="recurrence-error" id="sessionDetailsError" role="alert"></p>
+  </div>
+</div>
+
 <script>
 const DEFAULT_PROGRAM = {"P1":{"title":"P1","exercises":[{"id":"p1w-a","name":"Riscaldamento Generale","type":"warmup","note":null,"rest":null,"weekly":{"1":"5' vogatore","2":"5' vogatore","3":"5' vogatore","4":"5' vogatore","5":"5' vogatore","6":"5' vogatore","7":"5' vogatore","8":"5' vogatore","9":"5' vogatore","10":"5' vogatore","11":"5' vogatore","12":"5' vogatore","13":"5' vogatore","14":"5' vogatore","15":"5' vogatore","16":"5' vogatore","17":"5' vogatore","18":"5' vogatore","19":"5' vogatore"},"sets":3,"reps":"5' vogatore","intensity":1},{"id":"p1-p","name":"Dead Bug","note":null,"rest":null,"weekly":{"1":"2 × 10 per lato","2":"2 × 10 per lato","3":"2 × 10 per lato","4":"2 × 10 per lato","5":"2 × 10 per lato","6":"2 × 10 per lato","7":"2 × 10 per lato","8":"2 × 10 per lato","9":"2 × 10 per lato","10":"2 × 10 per lato","11":"2 × 10 per lato","12":"2 × 10 per lato","13":"2 × 10 per lato","14":"2 × 10 per lato","15":"2 × 10 per lato","16":"2 × 10 per lato","17":"2 × 10 per lato","18":"2 × 10 per lato","19":"2 × 10 per lato"},"type":"prep","sets":2,"reps":"10 per lato","intensity":2},{"id":"p1-p2","name":"Hip Hinge con Bilanciere Scarico","note":null,"rest":null,"weekly":{"1":"2 × 12","2":"2 × 12","3":"2 × 12","4":"2 × 12","5":"2 × 12","6":"2 × 12","7":"2 × 12","8":"2 × 12","9":"2 × 12","10":"2 × 12","11":"2 × 12","12":"2 × 12","13":"2 × 12","14":"2 × 12","15":"2 × 12","16":"2 × 12","17":"2 × 12","18":"2 × 12","19":"2 × 12"},"type":"prep","sets":2,"reps":"12","intensity":2},{"id":"p1-1","name":"Stacco","note":null,"rest":"2-3'","weekly":{"1":"3 × 5-8","2":"3 × 5-8","3":"3 × 5-8","4":"3 × 5-8","5":"3 × 5-8","6":"3 × 5-8","7":"3 × 5-8","8":"3 × 5-8","9":"3 × 5-8","10":"3 × 5-8","11":"3 × 5-8","12":"3 × 5-8","13":"3 × 5-8","14":"3 × 5-8","15":"3 × 5-8","16":"3 × 5-8","17":"3 × 5-8","18":"3 × 5-8","19":"3 × 5-8"},"sets":3,"reps":"5-8","intensity":"fondamentale"},{"id":"p-chestpiana","name":"Chest Press Convergente","note":null,"rest":"90''","weekly":{"1":"3 × 8-12","2":"3 × 8-12","3":"3 × 8-12","4":"3 × 8-12","5":"3 × 8-12","6":"3 × 8-12","7":"3 × 8-12","8":"3 × 8-12","9":"3 × 8-12","10":"3 × 8-12","11":"3 × 8-12","12":"3 × 8-12","13":"3 × 8-12","14":"3 × 8-12","15":"3 × 8-12","16":"3 × 8-12","17":"3 × 8-12","18":"3 × 8-12","19":"3 × 8-12"},"sets":3,"reps":"8-12","intensity":"normale"},{"id":"p3-1","name":"Lat Machine (presa mista larga)","note":null,"rest":"90''","weekly":{"1":"3 × 8-12","2":"3 × 8-12","3":"3 × 8-12","4":"3 × 8-12","5":"3 × 8-12","6":"3 × 8-12","7":"3 × 8-12","8":"3 × 8-12","9":"3 × 8-12","10":"3 × 8-12","11":"3 × 8-12","12":"3 × 8-12","13":"3 × 8-12","14":"3 × 8-12","15":"3 × 8-12","16":"3 × 8-12","17":"3 × 8-12","18":"3 × 8-12","19":"3 × 8-12"},"sets":3,"reps":"8-12","intensity":"normale"},{"id":"p-pulley","name":"Pulley","note":null,"rest":"90''","weekly":{"1":"3 × 8-12","2":"3 × 8-12","3":"3 × 8-12","4":"3 × 8-12","5":"3 × 8-12","6":"3 × 8-12","7":"3 × 8-12","8":"3 × 8-12","9":"3 × 8-12","10":"3 × 8-12","11":"3 × 8-12","12":"3 × 8-12","13":"3 × 8-12","14":"3 × 8-12","15":"3 × 8-12","16":"3 × 8-12","17":"3 × 8-12","18":"3 × 8-12","19":"3 × 8-12"},"sets":3,"reps":"8-12","intensity":"normale"},{"id":"p4-7b","name":"Push Down ai Cavi + Curl ai Cavi (superserie)","note":"Tricipiti + bicipiti, stessa zona cavi","rest":"60''","weekly":{"1":"2 × 10-12","2":"2 × 10-12","3":"2 × 10-12","4":"2 × 10-12","5":"2 × 10-12","6":"2 × 10-12","7":"2 × 10-12","8":"2 × 10-12","9":"2 × 10-12","10":"2 × 10-12","11":"2 × 10-12","12":"2 × 10-12","13":"2 × 10-12","14":"2 × 10-12","15":"2 × 10-12","16":"2 × 10-12","17":"2 × 10-12","18":"2 × 10-12","19":"2 × 10-12"},"sets":2,"reps":"10-12","intensity":"normale"},{"id":"p1-5","name":"Leg Raise alla Captain's Chair","note":"Ginocchia piegate (non gambe tese) — appoggio su avambracci, non appesa","rest":"45''","weekly":{"1":"3 × 12-15","2":"3 × 12-15","3":"3 × 12-15","4":"3 × 12-15","5":"3 × 12-15","6":"3 × 12-15","7":"3 × 12-15","8":"3 × 12-15","9":"3 × 12-15","10":"3 × 12-15","11":"3 × 12-15","12":"3 × 12-15","13":"3 × 12-15","14":"3 × 12-15","15":"3 × 12-15","16":"3 × 12-15","17":"3 × 12-15","18":"3 × 12-15","19":"3 × 12-15"},"sets":3,"reps":"12-15","intensity":"normale"}],"defaultDay":0},"P2":{"title":"P2","exercises":[{"id":"p2w-b","name":"Riscaldamento Generale","type":"warmup","note":null,"rest":null,"weekly":{"1":"5' vogatore","2":"5' vogatore","3":"5' vogatore","4":"5' vogatore","5":"5' vogatore","6":"5' vogatore","7":"5' vogatore","8":"5' vogatore","9":"5' vogatore","10":"5' vogatore","11":"5' vogatore","12":"5' vogatore","13":"5' vogatore","14":"5' vogatore","15":"5' vogatore","16":"5' vogatore","17":"5' vogatore","18":"5' vogatore","19":"5' vogatore"},"sets":3,"reps":"5' vogatore","intensity":1},{"id":"p2-p","name":"Air Squat","note":null,"rest":null,"weekly":{"1":"2 × 15","2":"2 × 15","3":"2 × 15","4":"2 × 15","5":"2 × 15","6":"2 × 15","7":"2 × 15","8":"2 × 15","9":"2 × 15","10":"2 × 15","11":"2 × 15","12":"2 × 15","13":"2 × 15","14":"2 × 15","15":"2 × 15","16":"2 × 15","17":"2 × 15","18":"2 × 15","19":"2 × 15"},"type":"prep","sets":2,"reps":"15","intensity":2},{"id":"p2-p2","name":"Squat con Bilanciere Scarico","note":null,"rest":null,"weekly":{"1":"2 × 10","2":"2 × 10","3":"2 × 10","4":"2 × 10","5":"2 × 10","6":"2 × 10","7":"2 × 10","8":"2 × 10","9":"2 × 10","10":"2 × 10","11":"2 × 10","12":"2 × 10","13":"2 × 10","14":"2 × 10","15":"2 × 10","16":"2 × 10","17":"2 × 10","18":"2 × 10","19":"2 × 10"},"type":"prep","sets":2,"reps":"10","intensity":2},{"id":"p2-2","name":"Squat Bilanciere","note":"Presa alta — non lowbar (fastidio spalla con lowbar)","rest":"2'","weekly":{"1":"3 × 5-8","2":"3 × 5-8","3":"3 × 5-8","4":"3 × 5-8","5":"3 × 5-8","6":"3 × 5-8","7":"3 × 5-8","8":"3 × 5-8","9":"3 × 5-8","10":"3 × 5-8","11":"3 × 5-8","12":"3 × 5-8","13":"3 × 5-8","14":"3 × 5-8","15":"3 × 5-8","16":"3 × 5-8","17":"3 × 5-8","18":"3 × 5-8","19":"3 × 5-8"},"sets":3,"reps":"5-8","intensity":"fondamentale"},{"id":"p-chestinc","name":"Chest Press Inclinata","note":"O altra variante convergente","rest":"90''","weekly":{"1":"3 × 8-10","2":"3 × 8-10","3":"3 × 8-10","4":"3 × 8-10","5":"3 × 8-10","6":"3 × 8-10","7":"3 × 8-10","8":"3 × 8-10","9":"3 × 8-10","10":"3 × 8-10","11":"3 × 8-10","12":"3 × 8-10","13":"3 × 8-10","14":"3 × 8-10","15":"3 × 8-10","16":"3 × 8-10","17":"3 × 8-10","18":"3 × 8-10","19":"3 × 8-10"},"sets":3,"reps":"8-10","intensity":"normale"},{"id":"p1-6","name":"Lat Machine (presa larga)","note":null,"rest":"75''","weekly":{"1":"3 × 8-12","2":"3 × 8-12","3":"3 × 8-12","4":"3 × 8-12","5":"3 × 8-12","6":"3 × 8-12","7":"3 × 8-12","8":"3 × 8-12","9":"3 × 8-12","10":"3 × 8-12","11":"3 × 8-12","12":"3 × 8-12","13":"3 × 8-12","14":"3 × 8-12","15":"3 × 8-12","16":"3 × 8-12","17":"3 × 8-12","18":"3 × 8-12","19":"3 × 8-12"},"sets":3,"reps":"8-12","intensity":"normale"},{"id":"p2-3","name":"T-Bar","note":null,"rest":"90''","weekly":{"1":"3 × 8-12","2":"3 × 8-12","3":"3 × 8-12","4":"3 × 8-12","5":"3 × 8-12","6":"3 × 8-12","7":"3 × 8-12","8":"3 × 8-12","9":"3 × 8-12","10":"3 × 8-12","11":"3 × 8-12","12":"3 × 8-12","13":"3 × 8-12","14":"3 × 8-12","15":"3 × 8-12","16":"3 × 8-12","17":"3 × 8-12","18":"3 × 8-12","19":"3 × 8-12"},"sets":3,"reps":"8-12","intensity":"normale"},{"id":"p2-8","name":"Alzate Laterali","note":null,"rest":"60''","weekly":{"1":"3 × 12-15","2":"3 × 12-15","3":"3 × 12-15","4":"3 × 12-15","5":"3 × 12-15","6":"3 × 12-15","7":"3 × 12-15","8":"3 × 12-15","9":"3 × 12-15","10":"3 × 12-15","11":"3 × 12-15","12":"3 × 12-15","13":"3 × 12-15","14":"3 × 12-15","15":"3 × 12-15","16":"3 × 12-15","17":"3 × 12-15","18":"3 × 12-15","19":"3 × 12-15"},"sets":3,"reps":"12-15","intensity":"normale"},{"id":"p2-9","name":"Cable Crunch","note":null,"rest":"30''","weekly":{"1":"3 × 8-12","2":"3 × 8-12","3":"3 × 8-12","4":"3 × 8-12","5":"3 × 8-12","6":"3 × 8-12","7":"3 × 8-12","8":"3 × 8-12","9":"3 × 8-12","10":"3 × 8-12","11":"3 × 8-12","12":"3 × 8-12","13":"3 × 8-12","14":"3 × 8-12","15":"3 × 8-12","16":"3 × 8-12","17":"3 × 8-12","18":"3 × 8-12","19":"3 × 8-12"},"sets":3,"reps":"8-12","intensity":"normale"}],"defaultDay":2},"P3":{"title":"P3","exercises":[{"id":"p3w-c","name":"Riscaldamento Generale","type":"warmup","note":null,"rest":null,"weekly":{"1":"5' vogatore","2":"5' vogatore","3":"5' vogatore","4":"5' vogatore","5":"5' vogatore","6":"5' vogatore","7":"5' vogatore","8":"5' vogatore","9":"5' vogatore","10":"5' vogatore","11":"5' vogatore","12":"5' vogatore","13":"5' vogatore","14":"5' vogatore","15":"5' vogatore","16":"5' vogatore","17":"5' vogatore","18":"5' vogatore","19":"5' vogatore"},"sets":3,"reps":"5' vogatore","intensity":1},{"id":"p-trazC","name":"Trazioni","note":null,"rest":"90''","weekly":{"1":"3 × 8-12","2":"3 × 8-12","3":"3 × 8-12","4":"3 × 8-12","5":"3 × 8-12","6":"3 × 8-12","7":"3 × 8-12","8":"3 × 8-12","9":"3 × 8-12","10":"3 × 8-12","11":"3 × 8-12","12":"3 × 8-12","13":"3 × 8-12","14":"3 × 8-12","15":"3 × 8-12","16":"3 × 8-12","17":"3 × 8-12","18":"3 × 8-12","19":"3 × 8-12"},"sets":3,"reps":"8-12","intensity":"normale"},{"id":"p4-6","name":"Pec Deck Inverso","note":null,"rest":"75''","weekly":{"1":"3 × 8-12","2":"3 × 8-12","3":"3 × 8-12","4":"3 × 8-12","5":"3 × 8-12","6":"3 × 8-12","7":"3 × 8-12","8":"3 × 8-12","9":"3 × 8-12","10":"3 × 8-12","11":"3 × 8-12","12":"3 × 8-12","13":"3 × 8-12","14":"3 × 8-12","15":"3 × 8-12","16":"3 × 8-12","17":"3 × 8-12","18":"3 × 8-12","19":"3 × 8-12"},"sets":3,"reps":"8-12","intensity":"normale"},{"id":"p-alzC","name":"Alzate Laterali","note":null,"rest":"60''","weekly":{"1":"3 × 12-15","2":"3 × 12-15","3":"3 × 12-15","4":"3 × 12-15","5":"3 × 12-15","6":"3 × 12-15","7":"3 × 12-15","8":"3 × 12-15","9":"3 × 12-15","10":"3 × 12-15","11":"3 × 12-15","12":"3 × 12-15","13":"3 × 12-15","14":"3 × 12-15","15":"3 × 12-15","16":"3 × 12-15","17":"3 × 12-15","18":"3 × 12-15","19":"3 × 12-15"},"sets":3,"reps":"12-15","intensity":"normale"},{"id":"p-scatti","name":"Scatti","note":"In chiusura sessione","rest":"90''","weekly":{"1":"6-8 × 20-30'' sforzo max","2":"6-8 × 20-30'' sforzo max","3":"6-8 × 20-30'' sforzo max","4":"6-8 × 20-30'' sforzo max","5":"6-8 × 20-30'' sforzo max","6":"6-8 × 20-30'' sforzo max","7":"6-8 × 20-30'' sforzo max","8":"6-8 × 20-30'' sforzo max","9":"6-8 × 20-30'' sforzo max","10":"6-8 × 20-30'' sforzo max","11":"6-8 × 20-30'' sforzo max","12":"6-8 × 20-30'' sforzo max","13":"6-8 × 20-30'' sforzo max","14":"6-8 × 20-30'' sforzo max","15":"6-8 × 20-30'' sforzo max","16":"6-8 × 20-30'' sforzo max","17":"6-8 × 20-30'' sforzo max","18":"6-8 × 20-30'' sforzo max","19":"6-8 × 20-30'' sforzo max"},"sets":8,"reps":"20-30'' sforzo max","intensity":"normale"},{"id":"p3-5","name":"Leg Extension","note":null,"rest":"60''","weekly":{"1":"3 × 10-12","2":"3 × 10-12","3":"3 × 10-12","4":"3 × 10-12","5":"3 × 10-12","6":"3 × 10-12","7":"3 × 10-12","8":"3 × 10-12","9":"3 × 10-12","10":"3 × 10-12","11":"3 × 10-12","12":"3 × 10-12","13":"3 × 10-12","14":"3 × 10-12","15":"3 × 10-12","16":"3 × 10-12","17":"3 × 10-12","18":"3 × 10-12","19":"3 × 10-12"},"sets":3,"reps":"10-12","intensity":"normale"},{"id":"p3-6","name":"Leg Curl","note":null,"rest":"60''","weekly":{"1":"3 × 10-12","2":"3 × 10-12","3":"3 × 10-12","4":"3 × 10-12","5":"3 × 10-12","6":"3 × 10-12","7":"3 × 10-12","8":"3 × 10-12","9":"3 × 10-12","10":"3 × 10-12","11":"3 × 10-12","12":"3 × 10-12","13":"3 × 10-12","14":"3 × 10-12","15":"3 × 10-12","16":"3 × 10-12","17":"3 × 10-12","18":"3 × 10-12","19":"3 × 10-12"},"sets":3,"reps":"10-12","intensity":"normale"}],"defaultDay":4},"M1":{"title":"M1","exercises":[{"id":"m1w","name":"Riscaldamento Generale","type":"warmup","note":null,"rest":null,"weekly":{"1":"5' cammino leggero"},"sets":3,"reps":"5' cammino leggero","intensity":1},{"id":"m1-1","name":"Mobilità Toracica (Cat-Cow)","note":null,"rest":null,"weekly":{"1":"2 × 10"},"sets":2,"reps":"10","intensity":"normale"},{"id":"m1-2","name":"Mobilità Anche (90/90)","note":null,"rest":null,"weekly":{"1":"2 × 8 per lato"},"sets":2,"reps":"8 per lato","intensity":"normale"},{"id":"m1-3","name":"World's Greatest Stretch","note":null,"rest":null,"weekly":{"1":"2 × 5 per lato"},"sets":2,"reps":"5 per lato","intensity":"normale"},{"id":"m1-4","name":"Collo — Flessione/Estensione isometrica","note":"Mano contro fronte, poi contro nuca — resisti senza muovere la testa","rest":null,"weekly":{"1":"3 × 15-20''"},"sets":3,"reps":"15-20''","intensity":"normale"},{"id":"m1-5","name":"Collo — Flessione Laterale isometrica","note":"Mano contro tempia — resisti senza muovere la testa","rest":null,"weekly":{"1":"3 × 15-20'' per lato"},"sets":3,"reps":"15-20'' per lato","intensity":"normale"},{"id":"m1-6","name":"Collo — Chin Tuck (doppio mento)","note":null,"rest":null,"weekly":{"1":"2 × 12-15"},"sets":2,"reps":"12-15","intensity":"normale"}],"defaultDay":1},"M2":{"title":"M2","exercises":[{"id":"m2w","name":"Riscaldamento Generale","type":"warmup","note":null,"rest":null,"weekly":{"1":"5' cammino leggero"},"sets":3,"reps":"5' cammino leggero","intensity":1},{"id":"m2-1","name":"Mobilità Toracica (Cat-Cow)","note":null,"rest":null,"weekly":{"1":"2 × 10"},"sets":2,"reps":"10","intensity":"normale"},{"id":"m2-2","name":"Mobilità Anche (90/90)","note":null,"rest":null,"weekly":{"1":"2 × 8 per lato"},"sets":2,"reps":"8 per lato","intensity":"normale"},{"id":"m2-3","name":"World's Greatest Stretch","note":null,"rest":null,"weekly":{"1":"2 × 5 per lato"},"sets":2,"reps":"5 per lato","intensity":"normale"},{"id":"m2-4","name":"Collo — Flessione/Estensione isometrica","note":"Mano contro fronte, poi contro nuca — resisti senza muovere la testa","rest":null,"weekly":{"1":"3 × 15-20''"},"sets":3,"reps":"15-20''","intensity":"normale"},{"id":"m2-5","name":"Collo — Flessione Laterale isometrica","note":"Mano contro tempia — resisti senza muovere la testa","rest":null,"weekly":{"1":"3 × 15-20'' per lato"},"sets":3,"reps":"15-20'' per lato","intensity":"normale"},{"id":"m2-6","name":"Collo — Chin Tuck (doppio mento)","note":null,"rest":null,"weekly":{"1":"2 × 12-15"},"sets":2,"reps":"12-15","intensity":"normale"}],"defaultDay":3}};
 let PROGRAM = JSON.parse(JSON.stringify(DEFAULT_PROGRAM));
@@ -680,7 +709,8 @@ const CALENDAR_ANCHOR = '2026-09-21'; // lunedì della Settimana 1
 
 function weekStartDate(wk){
   const anchor = new Date(CALENDAR_ANCHOR+'T00:00:00');
-  return new Date(anchor.getTime() + (wk-1)*7*864e5);
+  anchor.setDate(anchor.getDate()+(wk-1)*7);
+  return anchor;
 }
 function weekStartISO(wk){
   const d = weekStartDate(wk);
@@ -764,8 +794,11 @@ async function isSessionDoneForWeek(week, key){
 }
 async function resetProgram(){
   if(!await confirmDialog('Ripristinare la scheda originale? Le modifiche fatte agli esercizi andranno perse (i dati registrati — carico, rep, note — restano).')) return;
-  PROGRAM = JSON.parse(JSON.stringify(DEFAULT_PROGRAM));
-  SESSION_ORDER = DEFAULT_SESSION_ORDER.slice();
+  const defaults={...newPPLTemplates(),...newFixedWeeklyTemplates()};
+  Object.entries(PROGRAM).forEach(([key,template])=>{if(!Object.hasOwn(defaults,key))template.archivedAfter=isoAddDays(RECURRENCE_PRESET_START,-1);});
+  PROGRAM = {...PROGRAM,...defaults};
+  SESSION_ORDER=[...Object.keys(defaults),...SESSION_ORDER.filter(k=>!Object.hasOwn(defaults,k))];
+  selectOccurrence(occurrencesForDate(currentDate)[0],currentDate);
   await saveProgramOverride();
   await saveSessionOrder();
   renderAll();
@@ -775,10 +808,769 @@ async function resetProgram(){
 let currentWeek = detectCurrentWeek();
 let currentSession = 'P1';
 
+// Calendar rules are independent of exercise templates and recorded sessions.
+let SEQUENCE = {enabled:false, start:todayISO(), weekdays:[0,1,2,3,4], steps:[]};
+let OCCURRENCE_MOVES = {};
+
+let SCHEDULE_DEFERRALS = [];
+let OCCURRENCE_MOVE_BASELINES = {};
+
+function isFixedSession(key){return PROGRAM[key]?.scheduleMode==='fixed';}
+
+function orderedDeferrals(){
+  return SCHEDULE_DEFERRALS.slice().sort((a,b)=>a.date.localeCompare(b.date)||a.id.localeCompare(b.id));
+}
+function nextAvailableTrainingDate(date,weekdays){
+  for(let step=1;step<=7;step++){
+    const next=isoAddDays(date,step);
+    if(weekdays.includes(weekdayIndexOf(next)))return next;
+  }
+  return isoAddDays(date,1);
+}
+function applyScheduleDeferrals(date,key,baseline=[],mode=PROGRAM[key]?.scheduleMode){
+  if(mode==='fixed')return date;
+  let shifted=date;
+  orderedDeferrals().forEach(event=>{
+    if(!event.keys.includes(key)||baseline.includes(event.id)||shifted<event.date)return;
+    shifted=nextAvailableTrainingDate(shifted,event.weekdays);
+  });
+  return shifted;
+}
+function plannedOccurrenceDate(item,mode=PROGRAM[item.key]?.scheduleMode){
+  const moved=OCCURRENCE_MOVES[item.id];
+  if(typeof moved==='string')return applyScheduleDeferrals(moved,item.key,OCCURRENCE_MOVE_BASELINES[item.id]||[],mode);
+  return applyScheduleDeferrals(item.sourceDate,item.key,[],mode);
+}
+function recordedOccurrenceDate(item){
+  return item.locked?item.date:plannedOccurrenceDate(item);
+}
+function refreshRecordedDates(){
+  Object.values(RECORDED_OCCURRENCES).forEach(item=>{
+    if(!item.locked)item.date=plannedOccurrenceDate(item);
+  });
+}
+function activeProgrammeKeys(date,selectedKey){
+  return SESSION_ORDER.filter(key=>{
+    const template=PROGRAM[key];
+    if(!template||isFixedSession(key))return false;
+    if(key===selectedKey)return true;
+    if(template.archivedAfter&&template.archivedAfter<date)return false;
+    if(template.oneOffDate&&template.oneOffDate<date)return false;
+    if(template.repeatRule){
+      const rule=cleanRepeatRule(template.repeatRule);
+      if(rule.end&&rule.end<date||rule.type==='none'&&rule.start<date)return false;
+    }
+    return true;
+  });
+}
+function availableProgrammeDays(keys){
+  const days=new Set();
+  keys.forEach(key=>{
+    const template=PROGRAM[key];
+    if(template.repeatRule){
+      const rule=cleanRepeatRule(template.repeatRule);
+      if(rule.type==='none'){days.add(weekdayIndexOf(rule.start));return;}
+      if(rule.type==='daily'){[0,1,2,3,4,5,6].forEach(day=>days.add(day));return;}
+      (rule.type==='custom'?rule.weekdays:[weekdayIndexOf(rule.start)]).forEach(day=>days.add(day));
+    }else if(template.oneOffDate){days.add(weekdayIndexOf(template.oneOffDate));
+    }else {
+      (Array.isArray(template.repeatDays)?template.repeatDays:[template.defaultDay]).filter(Number.isInteger).forEach(day=>days.add(day));
+    }
+  });
+  return days.size?[...days].sort():[0,1,2,3,4,5,6];
+}
+async function postponeProgramme(item){
+  if(isFixedSession(item.key))return skipFixedOccurrence(item);
+  if(await isOccurrenceDone(item)){
+    setDataMsg('✓ sessione già completata: il programma non è stato rinviato');return;
+  }
+  const existing=SCHEDULE_DEFERRALS.filter(event=>event.date===item.date);
+  if(existing.some(event=>event.keys.includes(item.key))){setDataMsg('Questa giornata è già stata rinviata');return;}
+  const keys=activeProgrammeKeys(item.date,item.key);
+  const weekdays=availableProgrammeDays(keys);
+  const alreadyShifted=new Set(existing.flatMap(event=>event.keys));
+  const event={id:'defer-'+Date.now()+'-'+Math.random().toString(36).slice(2,8),date:item.date,weekdays,keys:keys.filter(key=>!alreadyShifted.has(key))};
+  const previousRecords=JSON.parse(JSON.stringify(RECORDED_OCCURRENCES));
+  SCHEDULE_DEFERRALS.push(event);refreshRecordedDates();
+  if(!await saveScheduleConfig()){
+    SCHEDULE_DEFERRALS=SCHEDULE_DEFERRALS.filter(e=>e.id!==event.id);RECORDED_OCCURRENCES=previousRecords;
+    setDataMsg('⚠ rinvio non salvato: il calendario non è stato modificato',true);return;
+  }
+  const destination=plannedOccurrenceDate(item);
+  selectOccurrence(occurrencesForDate(item.date)[0],item.date);renderAll();scrollStripTo(item.date,false);
+  const label=new Date(destination+'T12:00:00').toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'short'});
+  setDataMsg('↪ Allenamento rinviato a '+label+' · programma successivo spostato');
+}
+async function skipFixedOccurrence(item){
+  if(await isOccurrenceDone(item)){
+    setDataMsg('✓ sessione già completata: non è stata saltata');return;
+  }
+  const hadMove=Object.hasOwn(OCCURRENCE_MOVES,item.id),oldMove=OCCURRENCE_MOVES[item.id];
+  const baseline=OCCURRENCE_MOVE_BASELINES[item.id];
+  OCCURRENCE_MOVES[item.id]=null;delete OCCURRENCE_MOVE_BASELINES[item.id];
+  if(!await saveScheduleConfig()){
+    if(hadMove)OCCURRENCE_MOVES[item.id]=oldMove;else delete OCCURRENCE_MOVES[item.id];
+    if(baseline!==undefined)OCCURRENCE_MOVE_BASELINES[item.id]=baseline;
+    setDataMsg('⚠ sessione non saltata: salvataggio non disponibile',true);return;
+  }
+  selectOccurrence(occurrencesForDate(item.date)[0],item.date);renderAll();scrollStripTo(item.date,false);
+  setDataMsg('✓ sessione saltata senza recupero · le prossime date restano uguali');
+}
+async function undoProgrammeDeferral(id){
+  const event=SCHEDULE_DEFERRALS.find(e=>e.id===id);if(!event)return;
+  const previousRecords=JSON.parse(JSON.stringify(RECORDED_OCCURRENCES));
+  SCHEDULE_DEFERRALS=SCHEDULE_DEFERRALS.filter(e=>e.id!==id);refreshRecordedDates();
+  if(!await saveScheduleConfig()){
+    SCHEDULE_DEFERRALS.push(event);RECORDED_OCCURRENCES=previousRecords;
+    setDataMsg('⚠ annullamento non salvato',true);return;
+  }
+  selectOccurrence(occurrencesForDate(event.date)[0],event.date);renderAll();scrollStripTo(event.date,false);
+  setDataMsg('✓ rinvio annullato · programma riallineato');
+}
+
+let RECORDED_OCCURRENCES = {};
+let currentDate = todayISO();
+let currentOccurrenceId = null;
+let daysRenderGeneration = 0;
+
+function calendarDayNumber(iso){
+  const [y,m,d] = String(iso).split('-').map(Number);
+  return Math.floor(Date.UTC(y,m-1,d)/864e5);
+}
+function validCalendarDate(iso){
+  return /^\d{4}-\d{2}-\d{2}$/.test(iso||'') &&
+    new Date(calendarDayNumber(iso)*864e5).toISOString().slice(0,10)===iso;
+}
+function cleanSequence(value){
+  const v = value && typeof value==='object' ? value : {};
+  return {
+    enabled:!!v.enabled,
+    start:validCalendarDate(v.start) ? v.start : todayISO(),
+    weekdays:Array.isArray(v.weekdays) ? [...new Set(v.weekdays.filter(d=>Number.isInteger(d)&&d>=0&&d<=6))].sort() : [0,1,2,3,4],
+    steps:Array.isArray(v.steps) ? v.steps.filter(s=>s&&typeof s==='object').map((s,i)=>({id:typeof s.id==='string'?s.id:'step-'+i, key:typeof s.key==='string'?s.key:null})) : [],
+  };
+}
+async function loadScheduleConfig(){
+  try{
+    const stored = JSON.parse(await rawGet('schedule-config-v1') || 'null');
+    if(!stored) return;
+    SEQUENCE = cleanSequence(stored.sequence);
+    REPEAT_EDITOR_VERSION=Number(stored.repeatEditorVersion)||0;
+    FIXED_WEEKLY_VERSION=Number(stored.fixedWeeklyVersion)||0;
+    SCHEDULE_DEFERRALS=Array.isArray(stored.deferrals)?stored.deferrals.filter(e=>e&&typeof e.id==='string'&&validCalendarDate(e.date)&&Array.isArray(e.keys)&&Array.isArray(e.weekdays)&&e.weekdays.length).map(e=>({...e,weekdays:e.weekdays.filter(d=>Number.isInteger(d)&&d>=0&&d<=6)})).filter(e=>e.weekdays.length):[];
+    OCCURRENCE_MOVE_BASELINES=stored.moveBaselines&&typeof stored.moveBaselines==='object'?stored.moveBaselines:{};
+    OCCURRENCE_MOVES = stored.moves && typeof stored.moves==='object' && !Array.isArray(stored.moves) ? stored.moves : {};
+    RECORDED_OCCURRENCES = stored.recorded && typeof stored.recorded==='object' ? stored.recorded : {};
+  }catch(e){}
+}
+async function saveScheduleConfig(){
+  return rawSet('schedule-config-v1', JSON.stringify({sequence:SEQUENCE,moves:OCCURRENCE_MOVES,recorded:RECORDED_OCCURRENCES,repeatEditorVersion:REPEAT_EDITOR_VERSION,fixedWeeklyVersion:FIXED_WEEKLY_VERSION,deferrals:SCHEDULE_DEFERRALS,moveBaselines:OCCURRENCE_MOVE_BASELINES}));
+}
+function sequenceSlotFor(dateISO, config = SEQUENCE){
+  if(!config.enabled || !config.steps.length || !config.weekdays.length || dateISO<config.start) return null;
+  if(!config.weekdays.includes(weekdayIndexOf(dateISO))) return null;
+  const length = calendarDayNumber(dateISO)-calendarDayNumber(config.start)+1;
+  let count = Math.floor(length/7)*config.weekdays.length;
+  const firstDay = weekdayIndexOf(config.start);
+  for(let i=0;i<length%7;i++) if(config.weekdays.includes((firstDay+i)%7)) count++;
+  return {step:config.steps[(count-1)%config.steps.length], index:(count-1)%config.steps.length};
+}
+function occurrence(key, sourceDate, sequence = false){
+  return {key, sourceDate, date:sourceDate, id:sourceDate+'|'+key, sequence};
+}
+function baseOccurrencesForDate(dateISO){
+  const week=weekForDate(dateISO),weekday=weekdayIndexOf(dateISO),result=[];
+  SESSION_ORDER.forEach(key=>{
+    const template=PROGRAM[key];
+    if(!template||template.archivedAfter&&dateISO>template.archivedAfter)return;
+    if(template.repeatRule){
+      if(repeatRuleMatches(dateISO,cleanRepeatRule(template.repeatRule)))result.push(occurrence(key,dateISO));
+      return;
+    }
+    if(template.oneOffDate){if(template.oneOffDate===dateISO)result.push(occurrence(key,dateISO));return;}
+    const override=SESSION_DAY_OVERRIDES[String(week)]?.[key];
+    if(template.defaultDay===null&&override===undefined)return;
+    const days=override!==undefined?[override]:Array.isArray(template.repeatDays)?template.repeatDays:[effectiveDayFor(week,key)];
+    if(days.includes(weekday))result.push(occurrence(key,dateISO));
+  });
+  return result;
+}
+
+function sourceDatesForActualDate(date,key){
+  if(isFixedSession(key))return [date];
+  let dates=new Set([date]);
+  orderedDeferrals().reverse().filter(event=>event.keys.includes(key)).forEach(event=>{
+    const previous=new Set();
+    dates.forEach(candidate=>{
+      if(candidate<event.date){previous.add(candidate);return;}
+      for(let offset=1;offset<=7;offset++){
+        const source=isoAddDays(candidate,-offset);
+        if(source>=event.date&&nextAvailableTrainingDate(source,event.weekdays)===candidate)previous.add(source);
+      }
+    });
+    dates=previous;
+  });
+  return [...dates];
+}
+function occurrencesForDate(dateISO){
+  const result=new Map();
+  SESSION_ORDER.forEach(key=>{
+    sourceDatesForActualDate(dateISO,key).forEach(sourceDate=>{
+      baseOccurrencesForDate(sourceDate).filter(item=>item.key===key).forEach(item=>{
+        if(Object.hasOwn(OCCURRENCE_MOVES,item.id))return;
+        const pin=RECORDED_OCCURRENCES[item.id];
+        const date=pin?recordedOccurrenceDate(pin):plannedOccurrenceDate(item);
+        if(date===dateISO)result.set(item.id,{...item,date});
+      });
+    });
+  });
+  Object.entries(OCCURRENCE_MOVES).forEach(([id,destination])=>{
+    if(typeof destination!=='string')return;
+    const split=id.indexOf('|');if(split<0)return;
+    const sourceDate=id.slice(0,split),key=id.slice(split+1);
+    const original=baseOccurrencesForDate(sourceDate).find(item=>item.key===key)||RECORDED_OCCURRENCES[id];
+    if(!original)return;
+    const date=RECORDED_OCCURRENCES[id]?.locked?RECORDED_OCCURRENCES[id].date:plannedOccurrenceDate(original);
+    if(date===dateISO)result.set(id,{...original,date});
+  });
+  Object.values(RECORDED_OCCURRENCES).forEach(item=>{
+    const date=recordedOccurrenceDate(item);
+    if(date===dateISO&&PROGRAM[item.key]&&SESSION_ORDER.includes(item.key)&&OCCURRENCE_MOVES[item.id]!==null){
+      result.set(item.id,{...item,date});
+    }
+  });
+  return [...result.values()].sort((a,b)=>SESSION_ORDER.indexOf(a.key)-SESSION_ORDER.indexOf(b.key)||a.sourceDate.localeCompare(b.sourceDate));
+}
+
+function openDayActions(dateISO){
+  const actions=[{label:'+ Nuova sessione',onClick:()=>addSession(dateISO)}];
+  SCHEDULE_DEFERRALS.filter(event=>event.date===dateISO).forEach(event=>{
+    actions.push({label:'↩ Annulla rinvio e riallinea programma',onClick:()=>undoProgrammeDeferral(event.id)});
+  });
+  Object.keys(OCCURRENCE_MOVES).filter(id=>id.startsWith(dateISO+'|')).forEach(id=>{
+    const key=id.slice(id.indexOf('|')+1);if(!PROGRAM[key])return;
+    actions.push({label:'↩ Ripristina '+PROGRAM[key].title,onClick:async()=>{
+      const old=OCCURRENCE_MOVES[id],baseline=OCCURRENCE_MOVE_BASELINES[id];delete OCCURRENCE_MOVES[id];delete OCCURRENCE_MOVE_BASELINES[id];
+      if(RECORDED_OCCURRENCES[id])RECORDED_OCCURRENCES[id].date=applyScheduleDeferrals(dateISO,key);
+      if(!await saveScheduleConfig()){OCCURRENCE_MOVES[id]=old;OCCURRENCE_MOVE_BASELINES[id]=baseline;setDataMsg('⚠ ripristino non salvato',true);return;}
+      selectOccurrence(occurrencesForDate(dateISO).find(o=>o.id===id),dateISO);renderAll();scrollStripTo(dateISO,true);
+    }});
+  });
+  openTwoActionMenu(actions);
+}
+function selectOccurrence(item, dateISO){
+  currentDate = dateISO;
+  currentWeek = weekForDate(dateISO);
+  currentSession = item?.key || null;
+  currentOccurrenceId = item?.id || null;
+}
+function selectedOccurrence(){
+  let date = currentDate;
+  if(weekForDate(date)!==currentWeek){
+    const day = effectiveDayFor(currentWeek,currentSession);
+    date = isoAddDays(weekStartISO(currentWeek),day===null?0:day);
+  }
+  const list = occurrencesForDate(date);
+  return list.find(o=>o.id===currentOccurrenceId && o.key===currentSession)
+    || list.find(o=>o.key===currentSession)
+    || occurrence(currentSession,date);
+}
+async function moveCalendarOccurrence(item, destination){
+  if(isoAddDays(destination,-weekdayIndexOf(destination))!==isoAddDays(item.date,-weekdayIndexOf(item.date))){
+    setDataMsg('⚠ puoi spostare solo dentro la stessa settimana',true);
+    return false;
+  }
+  const automaticDate=applyScheduleDeferrals(item.sourceDate,item.key);
+  if(destination===automaticDate){delete OCCURRENCE_MOVES[item.id];delete OCCURRENCE_MOVE_BASELINES[item.id];}
+  else {OCCURRENCE_MOVES[item.id]=destination;OCCURRENCE_MOVE_BASELINES[item.id]=SCHEDULE_DEFERRALS.map(event=>event.id);}
+  if(RECORDED_OCCURRENCES[item.id])RECORDED_OCCURRENCES[item.id].date=destination;
+  if(!await saveScheduleConfig()){
+    setDataMsg('⚠ spostamento non salvato: esporta i dati prima di chiudere',true);
+  }
+  selectOccurrence({...item,date:destination},destination);
+  return true;
+}
+function legacyRecordDate(id, week, record){
+  const owner = Object.entries(PROGRAM).find(([,t])=>t.exercises?.some(ex=>ex.id===id));
+  const weekday = owner ? effectiveDayFor(week,owner[0]) : null;
+  if(weekday!==null)return isoAddDays(weekStartISO(week),weekday);
+  if(validCalendarDate(record.date) && weekForDate(record.date)===week)return record.date;
+  return weekStartISO(week);
+}
+function exerciseRecords(id,data){
+  const records = new Map();
+  const owner = Object.entries(PROGRAM).find(([,t])=>t.exercises?.some(ex=>ex.id===id))?.[0] || '';
+  Object.entries(data).filter(([key])=>/^\d+$/.test(key)).forEach(([key,entry])=>{
+    if(!entry || typeof entry!=='object') return;
+    const date = legacyRecordDate(id,Number(key),entry);
+    const identity = date+'|'+owner;
+    const actualDate=RECORDED_OCCURRENCES[identity]?recordedOccurrenceDate(RECORDED_OCCURRENCES[identity]):date;
+    records.set(identity,{id:identity,date:actualDate,entry,legacy:true,week:Number(key)});
+  });
+  Object.entries(data).filter(([key])=>/^\d{4}-\d{2}-\d{2}\|/.test(key)).forEach(([key,entry])=>{
+    if(!entry || typeof entry!=='object') return;
+    const date = RECORDED_OCCURRENCES[key]?recordedOccurrenceDate(RECORDED_OCCURRENCES[key]):validCalendarDate(entry.sessionDate)?entry.sessionDate:key.slice(0,10);
+    records.set(key,{id:key,date,entry,legacy:false,week:weekForDate(date)});
+  });
+  return [...records.values()].filter(r=>!r.entry.cleared);
+}
+function exerciseRecordFor(id,data,item){
+  if(Object.hasOwn(data,item.id)) return data[item.id].cleared ? {} : data[item.id];
+  return exerciseRecords(id,data).find(r=>r.legacy && r.id===item.id)?.entry || {};
+}
+function previousExerciseRecords(id,data,item){
+  return exerciseRecords(id,data).filter(r=>r.id!==item.id && r.date<item.date)
+    .sort((a,b)=>b.date.localeCompare(a.date)||a.id.localeCompare(b.id));
+}
+async function indexRecordedOccurrences(){
+  const ids=[...new Set(Object.values(PROGRAM).flatMap(t=>(t.exercises||[]).map(ex=>ex.id)))];
+  for(const id of ids){
+    const data=await loadHistory(id);
+    exerciseRecords(id,data).forEach(record=>{
+      if(RECORDED_OCCURRENCES[record.id])return;
+      const split=record.id.indexOf('|'),key=record.id.slice(split+1);
+      if(!PROGRAM[key])return;
+      const sourceDate=record.id.slice(0,split);
+      const date=typeof OCCURRENCE_MOVES[record.id]==='string'?OCCURRENCE_MOVES[record.id]:record.date;
+      RECORDED_OCCURRENCES[record.id]={key,id:record.id,sourceDate,date,sequence:false};
+    });
+  }
+  for(const item of Object.values(RECORDED_OCCURRENCES)){
+    if(item.locked===undefined)item.locked=item.date<todayISO()||await isOccurrenceDone(item);
+  }
+}
+async function isOccurrenceDone(item){
+  const exercises = PROGRAM[item.key]?.exercises.filter(ex=>ex.type!=='warmup') || [];
+  if(!exercises.length) return false;
+  for(const ex of exercises){
+    const data = await loadHistory(ex.id);
+    if(!exerciseRecordFor(ex.id,data,item).completed) return false;
+  }
+  return true;
+}
+
+const RECURRENCE_PRESET_START = '2026-10-19';
+let REPEAT_EDITOR_VERSION = 0;
+let FIXED_WEEKLY_VERSION = 0;
+
+function cleanRepeatRule(value, fallbackDate = todayISO()){
+  const raw=value&&typeof value==='object'?value:{};
+  const type=['none','daily','weekly','biweekly','custom'].includes(raw.type)?raw.type:'none';
+  const start=validCalendarDate(raw.start)?raw.start:fallbackDate;
+  const days=Array.isArray(raw.weekdays)?[...new Set(raw.weekdays.filter(d=>Number.isInteger(d)&&d>=0&&d<=6))].sort():[weekdayIndexOf(start)];
+  const interval=Number(raw.interval);
+  return {type,start,end:validCalendarDate(raw.end)?raw.end:null,weekdays:days,
+    interval:Number.isInteger(interval)&&interval>=1&&interval<=365?interval:1,
+    unit:raw.unit==='weeks'?'weeks':'selectedDays'};
+}
+function selectedDayCount(start,date,days){
+  if(date<start||!days.length)return 0;
+  const length=calendarDayNumber(date)-calendarDayNumber(start)+1;
+  let count=Math.floor(length/7)*days.length;
+  const first=weekdayIndexOf(start);
+  for(let i=0;i<length%7;i++)if(days.includes((first+i)%7))count++;
+  return count;
+}
+function repeatRuleMatches(date,rule){
+  if(date<rule.start||(rule.end&&date>rule.end))return false;
+  if(rule.type==='none')return date===rule.start;
+  if(rule.type==='daily')return true;
+  const day=weekdayIndexOf(date);
+  if(rule.type==='weekly'||rule.type==='biweekly'){
+    const delta=calendarDayNumber(date)-calendarDayNumber(rule.start);
+    return day===weekdayIndexOf(rule.start)&&delta%(rule.type==='biweekly'?14:7)===0;
+  }
+  if(!rule.weekdays.includes(day))return false;
+  if(rule.unit==='weeks'){
+    const startMonday=isoAddDays(rule.start,-weekdayIndexOf(rule.start));
+    const dateMonday=isoAddDays(date,-weekdayIndexOf(date));
+    return ((calendarDayNumber(dateMonday)-calendarDayNumber(startMonday))/7)%rule.interval===0;
+  }
+  return (selectedDayCount(rule.start,date,rule.weekdays)-1)%rule.interval===0;
+}
+function firstRepeatDate(rule){
+  for(let offset=0;offset<3650;offset++){
+    const date=isoAddDays(rule.start,offset);
+    if(rule.end&&date>rule.end)return null;
+    if(repeatRuleMatches(date,rule))return date;
+  }
+  return null;
+}
+const PPL_WORKOUT_VERSION = 'daily-home-2026-10-20-v2';
+const EXERCISE_PRESCRIPTION_VERSION = '3x12-2026-10-20';
+function newPPLExercises(key){
+  const mobility={
+    'ppl-push':[
+      ['arm-circles','Circonduzioni delle braccia da seduto',null],
+      ['kneeling-spine','Mobilizzazione della colonna in ginocchio','Mani appoggiate su un rialzo.'],
+      ['seated-w-y','Movimento da W a Y da seduto',null],
+      ['incline-scapular','Mobilizzazione scapolo-toracica in plank inclinato',null],
+      ['thoracic-extension','Estensioni toraciche con gomiti sul rialzo',null],
+      ['reverse-plank','Plank inverso dinamico con mani sul rialzo',null],
+    ],
+    'ppl-pull':[
+      ['deep-squat-side','Inclinazioni laterali in squat profondo','Mani dietro la testa; inclina il busto alternativamente ai lati.'],
+      ['deep-squat-spine','Flessione ed estensione della colonna in squat profondo','Braccia incrociate sul petto; arrotonda e ridistendi la schiena.'],
+      ['deep-squat-rotation','Rotazioni del busto in squat profondo','Un braccio in appoggio; apri l’altro gomito verso l’alto.'],
+    ],
+    'ppl-legs':[
+      ['leg-bend-extend','Piegamento e distensione delle gambe con mani a terra',null],
+      ['half-kneeling-hip','Mobilità dell’anca in mezzo inginocchio','Alterna la gamba anteriore piegata e distesa-aperta.'],
+      ['half-kneeling-ankle','Mobilizzazione della caviglia in mezzo inginocchio','Ginocchio guidato dalle mani.'],
+      ['frog-rocks','Frog rocks',null],
+      ['down-dog-extension','Dal cane a testa in giù all’estensione del tronco','Passaggio con piegamento delle braccia.'],
+      ['hip-switches','90/90 hip switches',null],
+      ['seated-butterfly','Farfalla da seduto','Piante dei piedi unite.'],
+    ],
+  }[key]||[];
+  const movements={
+    'ppl-push':[
+      ['push-up','Push-up','bodyweight',null],
+      ['floor-press','Floor press con manubri','normale',null],
+      ['pike-push-up','Pike push-up','bodyweight','Superserie 1A · prosegui con la shoulder press leggera.'],
+      ['shoulder-press','Shoulder press leggera','normale','Superserie 1B · subito dopo i pike push-up.'],
+      ['triceps-seated','Estensioni tricipiti da seduto','normale','Sopra la testa, con un manubrio impugnato a due mani.'],
+    ],
+    'ppl-pull':[
+      ['pull-up','Trazioni alla sbarra','bodyweight',null],
+      ['one-arm-row','Rematore singolo con manubrio e appoggio','normale',null],
+      ['rear-raise','Alzate posteriori','normale',null],
+      ['lateral-seated','Alzate laterali da seduto','normale',null],
+      ['curl','Curl con manubri','normale','Con supinazione oppure hammer curl.'],
+    ],
+    'ppl-legs':[
+      ['squat','Squat','normale',null],
+      ['lunges','Affondi con manubri','normale',null],
+      ['romanian-deadlift','Stacco rumeno','normale',null],
+    ],
+  }[key]||[];
+  const make=(id,name,category,note)=>({id:'home-'+id,name,category,...(category==='normale'?{intensity:'normale'}:{type:category}),note,sets:3,reps:'12',rest:null,weekly:{'1':''}});
+  return [
+    ...mobility.map(([id,name,note])=>make(key+'-'+id,name,'mobility',note)),
+    ...movements.map(values=>make(...values)),
+  ];
+}
+async function ensurePPLWorkoutPreset(){
+  const original=JSON.parse(JSON.stringify(PROGRAM));
+  let changed=false;
+  for(const key of ['ppl-push','ppl-pull','ppl-legs']){
+    const template=PROGRAM[key];if(!template||template.workoutVersion===PPL_WORKOUT_VERSION)continue;
+    const placeholders=(template.exercises||[]).filter(ex=>ex.id==='home-'+key+'-mobility'||['Mobilità Push','Mobilità Pull','Mobilità Legs'].includes(ex.name));
+    const remaining=(template.exercises||[]).filter(ex=>!placeholders.includes(ex));
+    if(placeholders.length)template.archivedExercises=[...(template.archivedExercises||[]),...placeholders.map(ex=>{const archived={...ex};delete archived.videoUrl;return archived;})];
+    const normalize=name=>String(name||'').trim().toLocaleLowerCase('it-IT');
+    template.exercises=newPPLExercises(key).map(preset=>{
+      const index=remaining.findIndex(ex=>ex.id===preset.id||normalize(ex.name)===normalize(preset.name));
+      if(index<0)return preset;
+      const existing=remaining.splice(index,1)[0];
+      return existing;
+    }).concat(remaining);
+    template.workoutVersion=PPL_WORKOUT_VERSION;changed=true;
+  }
+  for(const key of SESSION_ORDER){
+    const template=PROGRAM[key];
+    if(!template||template.archivedAfter&&template.archivedAfter<todayISO()||template.prescriptionVersion===EXERCISE_PRESCRIPTION_VERSION)continue;
+    (template.exercises||[]).forEach(ex=>{ex.sets=3;ex.reps='12';delete ex.videoUrl;});
+    template.prescriptionVersion=EXERCISE_PRESCRIPTION_VERSION;changed=true;
+  }
+  if(changed&&!await saveProgramOverride()){
+    PROGRAM=original;
+    setDataMsg('⚠ allenamenti non salvati: esporta i dati prima di chiudere',true);
+  }
+}
+function newPPLTemplates(){
+  return Object.fromEntries([['ppl-push','Push',0],['ppl-pull','Pull',1],['ppl-legs','Legs',2]].map(([key,title,offset])=>[
+    key,{title,exercises:newPPLExercises(key),workoutVersion:PPL_WORKOUT_VERSION,prescriptionVersion:EXERCISE_PRESCRIPTION_VERSION,defaultDay:null,repeatRule:{type:'custom',start:isoAddDays(RECURRENCE_PRESET_START,offset),end:null,weekdays:[0,1,2,3,4],interval:3,unit:'selectedDays'}}
+  ]));
+}
+const COMPLEMENTARY_ROUTINE_VERSION = 'complementary-2026-10-20-v1';
+function complementaryRoutine(day){
+  const coreDay=day%2===0;
+  const make=(id,name,category,blockId,sets,reps,rest,note,trackingUnit='seconds')=>({
+    id:'complement-'+id,name,category,type:category,blockId,sets,reps,rest,note,trackingUnit,weekly:{'1':''},
+  });
+  const coreExercises={
+    0:[['dead-bug','Dead bug'],['reverse-crunch','Crunch inverso corto']],
+    2:[['reverse-crunch','Crunch inverso corto'],['heel-slides','Scivolamenti alternati dei talloni']],
+    4:[['long-dead-bug','Dead bug con estensione più lunga della gamba'],['bird-dog','Bird dog']],
+  };
+  const posturalExercises={
+    'wall-slides':['Wall slides','Braccia al muro, entro un movimento confortevole.'],
+    'thoracic-extension':['Estensioni toraciche sulla sedia','Movimento controllato nella parte alta della schiena.'],
+    'w-raises':['Aperture a W senza pesi','Movimento lento, con spalle e collo rilassati.'],
+    'chin-tuck':['Chin tuck','Nella finestra di 40″ esegui 6 richiami delicati da 3″, rilassandoti fra uno e l’altro.'],
+    'bird-dog':['Bird dog','Alterna braccio e gamba opposti, mantenendo il bacino stabile.'],
+    'thoracic-rotation':['Rotazioni toraciche da sdraiato sul fianco','Alterna i lati nella finestra di lavoro, senza forzare il collo.'],
+  };
+  const posturalOrder={
+    0:['wall-slides','thoracic-extension','w-raises','chin-tuck'],
+    2:['bird-dog','wall-slides','thoracic-extension','chin-tuck'],
+    4:['wall-slides','thoracic-rotation','w-raises','chin-tuck'],
+  };
+  const blocks=[
+    {id:'conditioning',title:coreDay?'Addome':'Corda',durationSeconds:coreDay?660:780,
+      instructions:coreDay?'Alterna i due esercizi: 10 intervalli da 40″ di lavoro e 20″ di recupero/cambio. Dopo il quinto intervallo aggiungi 1 minuto di pausa. Totale: 5 serie per esercizio, 11 minuti.'
+        :day===1?'13 giri da 30″ di salto e 30″ di recupero. Totale: 13 minuti.'
+        :'13 giri da 40″ di salto e 20″ di recupero. Finché il formato di B non è ben tollerato, mantieni 30″/30″, sempre per 13 minuti.'},
+    {id:'breathing',title:'Vacuum e respirazione',durationSeconds:300,
+      instructions:'2 minuti: 4 cicli da 10″ di richiamo leggero del basso addome e 20″ di rilassamento, respirando normalmente. Poi 3 minuti di respirazione diaframmatica tranquilla, senza apnee forzate.'},
+    {id:'control',title:coreDay?'Posturale':'Collo',durationSeconds:coreDay?480:300,
+      instructions:coreDay?'Esegui i quattro esercizi nell’ordine, per due giri. Ogni intervallo dura 1 minuto: fino a 40″ di movimento e 20″ di recupero/cambio. Circa 8–12 ripetizioni controllate, con il dosaggio specifico indicato per il chin tuck.'
+        :'Dedica 1 minuto a ciascuno dei cinque esercizi. Chin tuck: 6 cicli da 3″ di richiamo e 7″ di rilascio. Ogni isometria: 3 cicli da 5″ di pressione delicata e 15″ di rilascio. Testa ferma e respirazione continua.'},
+  ];
+  const exercises=coreDay?coreExercises[day].map(([id,name],index)=>make(id,name,'bodyweight','conditioning',5,'40″',"20''",
+    'Alterna con '+coreExercises[day][1-index][1]+'. Pausa aggiuntiva di 60″ dopo il quinto intervallo complessivo. '+
+    (id==='reverse-crunch'?'Testa appoggiata, sollevamento piccolo del bacino e niente slanci.':id==='heel-slides'?'Alterna i lati mantenendo il bacino stabile.':'Movimento controllato, senza accelerare quando la tecnica peggiora.'))):[
+      {...make('rope','Corda','cardio','conditioning',13,day===1?'30″':'40″',day===1?"30''":"20''",
+        day===1?'13 giri da 30″ salto + 30″ recupero. Salti bassi, ritmo regolare.':'13 giri da 40″ salto + 20″ recupero; usa 30″/30″ finché B non è ben tollerata.'),loadLabel:'Giri'},
+    ];
+  exercises.push(
+    make('vacuum','Vacuum leggero','breathing','breathing',4,'10″',"20''",'Richiama delicatamente il basso addome continuando a respirare. Ogni ciclo comprende anche 20″ di rilassamento; totale 2 minuti.'),
+    make('diaphragmatic-breathing','Respirazione diaframmatica','breathing','breathing',1,'180″',null,'3 minuti di respirazione tranquilla, senza forzare la profondità del respiro.'),
+  );
+  if(coreDay){
+    posturalOrder[day].forEach(id=>{
+      const [name,note]=posturalExercises[id];
+      exercises.push(make(id,name,'posture','control',2,'40″',"20''",note+' Due giri del circuito; 20″ per recuperare e cambiare esercizio.'));
+    });
+  }else{
+    exercises.push(make('chin-tuck','Chin tuck','posture','control',1,'60″',null,'6 cicli: 3″ di richiamo delicato del mento e 7″ di rilascio. Totale 1 minuto.'));
+    const directions=day===1?[
+      ['neck-front','Isometria cervicale anteriore','Mano sulla fronte.'],
+      ['neck-back','Isometria cervicale posteriore','Mano dietro la testa.'],
+      ['neck-right','Isometria cervicale laterale destra','Mano sulla tempia destra.'],
+      ['neck-left','Isometria cervicale laterale sinistra','Mano sulla tempia sinistra.'],
+    ]:[
+      ['neck-right','Isometria cervicale laterale destra','Mano sulla tempia destra.'],
+      ['neck-left','Isometria cervicale laterale sinistra','Mano sulla tempia sinistra.'],
+      ['neck-rotate-right','Isometria cervicale in rotazione destra','Opponi con la mano una lieve resistenza alla rotazione verso destra.'],
+      ['neck-rotate-left','Isometria cervicale in rotazione sinistra','Opponi con la mano una lieve resistenza alla rotazione verso sinistra.'],
+    ];
+    directions.forEach(([id,name,note])=>exercises.push(make(id,name,'posture','control',3,'5″',"15''",note+' Tre cicli da 5″ di pressione delicata + 15″ di rilascio. Testa ferma, senza trattenere il respiro. Totale 1 minuto.')));
+  }
+  return {exercises,timingPlan:blocks,plannedBlocks:blocks.map(block=>block.title+' · '+block.durationSeconds/60+' min'),
+    routineVersion:COMPLEMENTARY_ROUTINE_VERSION,prescriptionVersion:EXERCISE_PRESCRIPTION_VERSION};
+}
+async function ensureComplementaryRoutines(){
+  const original=JSON.parse(JSON.stringify(PROGRAM));let changed=false;
+  ['fixed-core-posture','fixed-cardio-neck','fixed-c','fixed-d','fixed-e'].forEach((key,day)=>{
+    const template=PROGRAM[key];
+    if(!template||!SESSION_ORDER.includes(key)||template.routineVersion===COMPLEMENTARY_ROUTINE_VERSION)return;
+    const routine=complementaryRoutine(day),remaining=(template.exercises||[]).slice();
+    routine.exercises=routine.exercises.map(preset=>{
+      const index=remaining.findIndex(ex=>ex.id===preset.id||ex.name===preset.name&&ex.trackingUnit===preset.trackingUnit);
+      if(index<0)return preset;
+      const existing=remaining.splice(index,1)[0];
+      return {...existing,...preset,id:existing.id};
+    });
+    template.archivedExercises=[...(template.archivedExercises||[]),...remaining];
+    Object.assign(template,routine);changed=true;
+  });
+  if(changed&&!await saveProgramOverride()){
+    PROGRAM=original;setDataMsg('⚠ routine non salvate: esporta i dati prima di chiudere',true);
+  }
+}
+function newFixedWeeklyTemplates(){
+  return Object.fromEntries([
+    ['fixed-core-posture','A',0],['fixed-cardio-neck','B',1],['fixed-c','C',2],['fixed-d','D',3],['fixed-e','E',4],
+  ].map(([key,title,day])=>[key,{
+    ...complementaryRoutine(day),title,scheduleMode:'fixed',defaultDay:null,
+    repeatRule:{type:'weekly',start:isoAddDays(RECURRENCE_PRESET_START,day),end:null,weekdays:[day],interval:1,unit:'weeks'},
+  }]));
+}
+function fixedLetterOccurrence(id){
+  const split=id.indexOf('|');if(split<0)return null;
+  const sourceDate=id.slice(0,split),oldKey=id.slice(split+1);
+  if(!validCalendarDate(sourceDate))return null;
+  const day=weekdayIndexOf(sourceDate);
+  const key=oldKey==='fixed-core-posture'?{2:'fixed-c',4:'fixed-e'}[day]:oldKey==='fixed-cardio-neck'?{3:'fixed-d'}[day]:null;
+  return key&&PROGRAM[key]?{id:sourceDate+'|'+key,key}:null;
+}
+async function migrateFixedWeeklyLetters(){
+  const defaults=newFixedWeeklyTemplates(),previous=JSON.parse(JSON.stringify(PROGRAM));
+  Object.entries(defaults).forEach(([key,template])=>{
+    const source=key==='fixed-core-posture'||key==='fixed-c'||key==='fixed-e'?'fixed-core-posture':'fixed-cardio-neck';
+    if(!previous[source]||!SESSION_ORDER.includes(source))return;
+    if(!PROGRAM[key]||key===source){
+      const original=previous[source],rule=cleanRepeatRule(original.repeatRule),start=rule.start>template.repeatRule.start?rule.start:template.repeatRule.start;
+      let first=start;while(weekdayIndexOf(first)!==template.repeatRule.weekdays[0])first=isoAddDays(first,1);
+      PROGRAM[key]={...JSON.parse(JSON.stringify(original)),...template,routineVersion:original.routineVersion||null,prescriptionVersion:original.prescriptionVersion||null,exercises:JSON.parse(JSON.stringify(original.exercises||[])),plannedBlocks:original.plannedBlocks||template.plannedBlocks,
+        repeatRule:{...template.repeatRule,start:first,end:rule.end}};
+    }
+    if(!SESSION_ORDER.includes(key))SESSION_ORDER.push(key);
+  });
+  for(const store of [OCCURRENCE_MOVES,OCCURRENCE_MOVE_BASELINES,RECORDED_OCCURRENCES]){
+    Object.entries(store).forEach(([id,value])=>{
+      const next=fixedLetterOccurrence(id);if(!next)return;
+      store[next.id]=store===RECORDED_OCCURRENCES?{...value,...next}:value;delete store[id];
+    });
+  }
+  const ids=[...new Set(['fixed-core-posture','fixed-cardio-neck'].flatMap(k=>(previous[k]?.exercises||[]).map(ex=>ex.id)))];
+  for(const id of ids){
+    const data=await loadHistory(id);let changed=false;
+    Object.entries(data).forEach(([occurrenceId,value])=>{
+      const next=fixedLetterOccurrence(occurrenceId);if(!next)return;
+      data[next.id]={...value,sessionKey:next.key};delete data[occurrenceId];changed=true;
+    });
+    if(changed&&!await saveHistory(id,data))return false;
+  }
+  return true;
+}
+async function ensureFixedWeeklyPreset(){
+  if(FIXED_WEEKLY_VERSION>=2)return;
+  const previousVersion=FIXED_WEEKLY_VERSION;
+  if(FIXED_WEEKLY_VERSION===1){
+    if(!await migrateFixedWeeklyLetters()){setDataMsg('⚠ modifica non salvata',true);return;}
+  }else{
+    const defaults=newFixedWeeklyTemplates();
+    Object.entries(defaults).forEach(([key,template])=>{
+      if(!PROGRAM[key])PROGRAM[key]=template;
+      if(!SESSION_ORDER.includes(key))SESSION_ORDER.push(key);
+    });
+  }
+  const fixedKeys=Object.keys(newFixedWeeklyTemplates()).filter(k=>SESSION_ORDER.includes(k));
+  SESSION_ORDER=[...SESSION_ORDER.filter(k=>!fixedKeys.includes(k)),...fixedKeys];
+  const programSaved=await saveProgramOverride(),orderSaved=await saveSessionOrder();
+  if(programSaved&&orderSaved){FIXED_WEEKLY_VERSION=2;if(await saveScheduleConfig())return;}
+  FIXED_WEEKLY_VERSION=previousVersion;
+  setDataMsg('⚠ parte settimanale non salvata: esporta i dati prima di chiudere',true);
+}
+async function ensureRepeatEditorPreset(){
+  if(REPEAT_EDITOR_VERSION>=2)return;
+  const archiveDate=isoAddDays(RECURRENCE_PRESET_START,-1);
+  Object.entries(PROGRAM).forEach(([key,template])=>{
+    if(!['ppl-push','ppl-pull','ppl-legs'].includes(key))template.archivedAfter=archiveDate;
+  });
+  const defaults=newPPLTemplates();
+  Object.entries(defaults).forEach(([key,template])=>{if(!PROGRAM[key])PROGRAM[key]=template;});
+  SESSION_ORDER=['ppl-push','ppl-pull','ppl-legs',...new Set([...SESSION_ORDER,...Object.keys(PROGRAM)].filter(k=>!Object.hasOwn(defaults,k)))];
+  SEQUENCE.enabled=false;
+  const programSaved=await saveProgramOverride(),orderSaved=await saveSessionOrder();
+  if(programSaved&&orderSaved){REPEAT_EDITOR_VERSION=2;if(await saveScheduleConfig())return;}
+  REPEAT_EDITOR_VERSION=0;
+  setDataMsg('⚠ configurazione non salvata: esporta i dati prima di chiudere',true);
+}
+function repeatRuleForTemplate(key,dateISO){
+  const template=PROGRAM[key];
+  if(template.repeatRule)return cleanRepeatRule(template.repeatRule,dateISO);
+  if(template.oneOffDate)return cleanRepeatRule({type:'none',start:template.oneOffDate});
+  const days=Array.isArray(template.repeatDays)?template.repeatDays:[template.defaultDay];
+  const selected=days.filter(d=>Number.isInteger(d)&&d>=0&&d<=6);
+  if(selected.length)return cleanRepeatRule({type:'custom',start:dateISO,weekdays:selected,interval:1,unit:'selectedDays'});
+  return cleanRepeatRule({type:'none',start:dateISO});
+}
+let sessionDetailsDraft=null;
+function openSessionDetails(key=null,dateISO=null){
+  const date=dateISO||currentDate||todayISO();
+  sessionDetailsDraft={key,originDate:date,rule:key?repeatRuleForTemplate(key,date):cleanRepeatRule({type:'none',start:date})};
+  document.getElementById('sessionDetailsTitle').textContent=key?'Modifica sessione':'Nuova sessione';
+  document.getElementById('sessionDetailsName').value=key?PROGRAM[key].title:'';
+  document.getElementById('sessionDetailsSchedule').value=key&&isFixedSession(key)?'fixed':'rolling';
+  document.getElementById('sessionDetailsStart').value=sessionDetailsDraft.rule.start;
+  document.getElementById('sessionDetailsRepeat').value=sessionDetailsDraft.rule.type;
+  document.getElementById('sessionDetailsInterval').value=sessionDetailsDraft.rule.interval;
+  document.getElementById('sessionDetailsUnit').value=sessionDetailsDraft.rule.unit;
+  document.getElementById('sessionDetailsEndMode').value=sessionDetailsDraft.rule.end?'date':'never';
+  document.getElementById('sessionDetailsEnd').value=sessionDetailsDraft.rule.end||'';
+  document.getElementById('sessionDetailsError').textContent='';
+  renderSessionDetailsDays();updateSessionDetails();
+  document.getElementById('sessionDetailsPage').classList.add('open');
+}
+function readSessionDetailsRule(){
+  const draft=sessionDetailsDraft.rule;
+  return {type:document.getElementById('sessionDetailsRepeat').value,start:document.getElementById('sessionDetailsStart').value,
+    weekdays:draft.weekdays.slice(),interval:Number(document.getElementById('sessionDetailsInterval').value),
+    unit:document.getElementById('sessionDetailsUnit').value,
+    end:document.getElementById('sessionDetailsEndMode').value==='date'?document.getElementById('sessionDetailsEnd').value:null};
+}
+function renderSessionDetailsDays(){
+  const row=document.getElementById('sessionDetailsDays');row.innerHTML='';
+  ['Lun','Mar','Mer','Gio','Ven','Sab','Dom'].forEach((title,day)=>{
+    const button=document.createElement('button');button.type='button';button.textContent=title;button.dataset.day=day;
+    const selected=sessionDetailsDraft.rule.weekdays.includes(day);
+    button.className='ef-cat-btn'+(selected?' active':'');button.setAttribute('aria-pressed',String(selected));
+    button.onclick=()=>{
+      const days=sessionDetailsDraft.rule.weekdays;
+      sessionDetailsDraft.rule.weekdays=days.includes(day)?days.filter(d=>d!==day):days.concat(day).sort();
+      renderSessionDetailsDays();updateSessionDetails();
+    };
+    row.appendChild(button);
+  });
+}
+function updateSessionDetails(){
+  if(!sessionDetailsDraft)return;
+  const rule=readSessionDetailsRule(),custom=rule.type==='custom';
+  const scheduleMode=document.getElementById('sessionDetailsSchedule').value;
+  document.getElementById('sessionDetailsCustom').hidden=!custom;
+  document.getElementById('sessionDetailsEndRow').hidden=rule.type==='none';
+  document.getElementById('sessionDetailsEnd').hidden=rule.type==='none'||!rule.end&&document.getElementById('sessionDetailsEndMode').value==='never';
+  document.getElementById('sessionDetailsEnd').min=rule.start;
+  const help=document.getElementById('sessionDetailsHelp');
+  help.textContent=custom?(rule.unit==='weeks'?'Ripete nei giorni scelti, ogni N settimane.':'Conta solo i giorni selezionati. Gli altri giorni, inclusi eventuali weekend, vengono saltati.')
+    :rule.type==='none'?'La sessione compare una sola volta nella data scelta.':'La ripetizione parte dalla data selezionata.';
+  help.textContent+=scheduleMode==='fixed'?' Se la salti, non viene recuperata e le altre sessioni non si spostano.':' Se la salti, viene recuperata e le altre sessioni del programma slittano.';
+  if(scheduleMode!=='fixed'&&sessionDetailsDraft.key&&SCHEDULE_DEFERRALS.some(event=>event.keys.includes(sessionDetailsDraft.key)))help.textContent+=' Le date mostrate includono i recuperi impostati.';
+  const preview=document.getElementById('sessionDetailsPreview');preview.innerHTML='';
+  if(!validCalendarDate(rule.start)||custom&&(!rule.weekdays.length||!Number.isInteger(rule.interval)||rule.interval<1||rule.interval>365))return;
+  if(rule.end&&(!validCalendarDate(rule.end)||rule.end<rule.start))return;
+  const title=document.createElement('p');title.className='recurrence-note';title.textContent='Prossime date';preview.appendChild(title);
+  const clean=cleanRepeatRule(rule),dates=[];
+  for(let day=0;day<3650&&dates.length<6;day++){
+    const date=isoAddDays(rule.start,day);
+    if(repeatRuleMatches(date,clean))dates.push(sessionDetailsDraft.key?plannedOccurrenceDate(occurrence(sessionDetailsDraft.key,date),scheduleMode):date);
+    if(rule.type==='none'||rule.end&&date>=rule.end)break;
+  }
+  const list=document.createElement('div');list.className='recurrence-preview';
+  dates.forEach(date=>{const chip=document.createElement('span');chip.textContent=new Date(date+'T12:00:00').toLocaleDateString('it-IT',{weekday:'short',day:'numeric',month:'short'});list.appendChild(chip);});
+  preview.appendChild(list);
+}
+async function saveSessionDetails(){
+  const message=document.getElementById('sessionDetailsError'),name=document.getElementById('sessionDetailsName').value.trim(),raw=readSessionDetailsRule();
+  message.textContent='';
+  if(!name){message.textContent='Scrivi il nome della sessione.';return;}
+  if(!validCalendarDate(raw.start)){message.textContent='Scegli una data di partenza valida.';return;}
+  if(raw.type==='custom'&&(!raw.weekdays.length||!Number.isInteger(raw.interval)||raw.interval<1||raw.interval>365)){
+    message.textContent='Scegli almeno un giorno e un intervallo intero tra 1 e 365.';return;
+  }
+  if(document.getElementById('sessionDetailsEndMode').value==='date'&&raw.type!=='none'&&(!validCalendarDate(raw.end)||raw.end<raw.start)){
+    message.textContent='La fine della ripetizione deve essere uguale o successiva alla partenza.';return;
+  }
+  if(raw.type==='none')raw.end=null;
+  const cleanRule=cleanRepeatRule(raw),firstDate=firstRepeatDate(cleanRule);
+  if(!firstDate){message.textContent='Nessuna data disponibile: modifica i giorni scelti o la fine della ripetizione.';return;}
+  const isNew=!sessionDetailsDraft.key;
+  const key=sessionDetailsDraft.key||'S'+Date.now()+'-'+Math.random().toString(36).slice(2,6);
+  if(isNew){PROGRAM[key]={title:name,exercises:[],defaultDay:null,prescriptionVersion:EXERCISE_PRESCRIPTION_VERSION};SESSION_ORDER.push(key);}
+  PROGRAM[key].title=name;PROGRAM[key].repeatRule=cleanRule;
+  PROGRAM[key].scheduleMode=document.getElementById('sessionDetailsSchedule').value==='fixed'?'fixed':'rolling';
+  delete PROGRAM[key].archivedAfter;delete PROGRAM[key].oneOffDate;delete PROGRAM[key].repeatDays;
+  PROGRAM[key].defaultDay=null;
+  const saved=await saveProgramOverride(),orderSaved=await saveSessionOrder();
+  if(!saved||!orderSaved){message.textContent='Salvataggio non disponibile. Esporta i dati prima di chiudere.';return;}
+  const previousDate=sessionDetailsDraft.originDate;
+  const date=repeatRuleMatches(previousDate,PROGRAM[key].repeatRule)?previousDate:firstDate;
+  document.getElementById('sessionDetailsPage').classList.remove('open');
+  if(document.getElementById('sessionModal').classList.contains('open')){
+    document.getElementById('sessionModalTitle').textContent=name;renderSessionModalExList(key);
+  }
+  selectOccurrence(occurrencesForDate(date).find(o=>o.key===key),date);
+  if(!stripDates.includes(date))stripCenterDate=date;
+  renderAll();scrollStripTo(date,true);
+}
+function bindSessionDetails(){
+  document.getElementById('sessionDetailsCancel').onclick=()=>document.getElementById('sessionDetailsPage').classList.remove('open');
+  document.getElementById('sessionDetailsSave').onclick=saveSessionDetails;
+  ['sessionDetailsStart','sessionDetailsRepeat','sessionDetailsUnit','sessionDetailsEndMode','sessionDetailsEnd','sessionDetailsSchedule'].forEach(id=>{
+    document.getElementById(id).onchange=updateSessionDetails;
+  });
+  document.getElementById('sessionDetailsInterval').oninput=updateSessionDetails;
+}
+
+
 function detectCurrentWeek(){
   const anchor = new Date(CALENDAR_ANCHOR+'T00:00:00');
   const today = new Date();
-  const diffDays = Math.floor((today - anchor) / 864e5);
+  const diffDays = calendarDayNumber(todayISO())-calendarDayNumber(CALENDAR_ANCHOR);
   return Math.max(1, Math.floor(diffDays/7) + 1);
 }
 
@@ -823,7 +1615,7 @@ function splitReps(str){
 function weekForDate(dateStr){
   const anchor = new Date(CALENDAR_ANCHOR+'T00:00:00');
   const d = new Date((dateStr||todayISO())+'T00:00:00');
-  const diffDays = Math.floor((d - anchor) / 864e5);
+  const diffDays = calendarDayNumber(dateStr||todayISO())-calendarDayNumber(CALENDAR_ANCHOR);
   return Math.max(1, Math.floor(diffDays/7) + 1);
 }
 
@@ -940,7 +1732,7 @@ function renderDayStrip(){
     const isToday = dateISO===today;
 
     const cell = document.createElement('div');
-    cell.className = 'day-cell'+(isToday?' today':'');
+    cell.className = 'day-cell'+(isToday?' today':'')+(SCHEDULE_DEFERRALS.some(event=>event.date===dateISO)?' deferred-day':'');
     cell.dataset.date = dateISO;
     cell.innerHTML = `
       <div class="day-cell-head">
@@ -951,28 +1743,46 @@ function renderDayStrip(){
     `;
     const sessionsEl = cell.querySelector('.day-cell-sessions');
     let dayMatchKey = null;
-    SESSION_ORDER.forEach(key=>{
-      if(!PROGRAM[key]) return;
-      if(effectiveDayFor(week, key)!==wIdx) return;
+    occurrencesForDate(dateISO).forEach(item=>{
+      const key = item.key;
       if(dayMatchKey===null) dayMatchKey = key;
       const pill = document.createElement('span');
-      pill.className = 'day-session-pill'+(key===currentSession && week===currentWeek ? ' active' : '');
+      pill.className = 'day-session-pill'+(item.sequence?' sequence':'')+(key===currentSession && dateISO===currentDate && (!currentOccurrenceId||item.id===currentOccurrenceId) ? ' active' : '');
       pill.dataset.sessionKey = key;
-      const wasMoved = SESSION_DAY_OVERRIDES[String(week)] && SESSION_DAY_OVERRIDES[String(week)][key]!==undefined;
+      pill.dataset.occurrenceId = item.id;
+      pill.title=PROGRAM[key].title+(isFixedSession(key)?' · Giorni fissi, senza recupero':'');
+      const wasMoved = item.sourceDate!==dateISO || SESSION_DAY_OVERRIDES[String(week)]?.[key]!==undefined;
       if(wasMoved) pill.classList.add('moved');
       pill.innerHTML = `<span class="day-session-pill-inner">${shortLabel(PROGRAM[key].title)}</span>`;
-      attachPillLongPressDrag(pill, key, week, dateISO);
+      attachPillLongPressDrag(pill, key, week, dateISO, item);
       sessionsEl.appendChild(pill);
-      isSessionDoneForWeek(week, key).then(done=>{
+      isOccurrenceDone(item).then(done=>{
         if(done) pill.classList.add('done');
       });
     });
     cell.classList.add('selectable');
+    cell.title = SCHEDULE_DEFERRALS.some(event=>event.date===dateISO)?'Allenamento rinviato. Tieni premuta la data per annullare il rinvio.':'Tieni premuta la data per aggiungere una sessione';
+    cell.tabIndex = 0;
+    cell.setAttribute('aria-label', d.toLocaleDateString('it-IT', {weekday:'long', day:'numeric', month:'long'}) + '. Tieni premuto per aggiungere una sessione.');
+    const openDayMenu = ()=> openDayActions(dateISO);
+    attachLongPress(cell, openDayMenu, e=> !e.target.closest('.day-session-pill'));
+    cell.addEventListener('contextmenu', e=>{
+      if(e.target.closest('.day-session-pill')) return;
+      e.preventDefault();
+      // On touch devices the long press already opens the same menu.
+      if(!document.getElementById('miniActionOverlay').classList.contains('open')) openDayMenu();
+    });
+    cell.addEventListener('keydown', e=>{
+      if(e.target!==cell || (e.key!=='Enter' && e.key!==' ')) return;
+      e.preventDefault();
+      openDayMenu();
+    });
     cell.onclick = (e)=>{
       const tappedPill = e.target.closest('.day-session-pill');
       const chosenKey = tappedPill ? tappedPill.dataset.sessionKey : dayMatchKey;
-      currentWeek = week;
-      currentSession = chosenKey;
+      const items = occurrencesForDate(dateISO);
+      const item = items.find(o=>o.id===tappedPill?.dataset.occurrenceId) || items.find(o=>o.key===chosenKey);
+      selectOccurrence(item,dateISO);
       renderAll();
       scrollStripTo(dateISO, true);
     };
@@ -985,10 +1795,7 @@ function renderDayStrip(){
 }
 
 function currentSelectionDate(){
-  if(currentSession==='PESO') return null;
-  const monday = weekStartISO(currentWeek);
-  if(PROGRAM[currentSession]) return isoAddDays(monday, effectiveDayFor(currentWeek, currentSession));
-  return null;
+  return currentSession==='PESO' ? null : currentDate;
 }
 
 function renderAllAndCenter(){
@@ -1082,27 +1889,13 @@ function openMonthPicker(){
 }
 
 function selectFromCenteredCell(){
-  const closest = getCenteredCell();
-  if(!closest) return;
-  const dateISO = closest.dataset.date;
-  const wIdx = weekdayIndexOf(dateISO);
-  const week = weekForDate(dateISO);
-  const candidates = SESSION_ORDER.filter(key=> PROGRAM[key] && effectiveDayFor(week, key)===wIdx);
-  let matchKey = candidates.length ? candidates[0] : null;
-  if(week===currentWeek && candidates.includes(currentSession)) matchKey = currentSession;
-  if(matchKey===currentSession && week===currentWeek) return;
-  currentSession = matchKey;
-  currentWeek = week;
-  document.querySelectorAll('.day-session-pill').forEach(p=> p.classList.remove('active'));
-  if(matchKey){
-    closest.querySelectorAll('.day-session-pill').forEach(p=>{
-      if((matchKey==='PESO' && p.textContent==='⚖️') || p.dataset.sessionKey===matchKey){
-        p.classList.add('active');
-      }
-    });
-  }
-  renderDays();
-  renderBodyweight();
+  const closest = getCenteredCell();if(!closest)return;
+  const dateISO=closest.dataset.date,items=occurrencesForDate(dateISO);
+  const item=items.find(o=>o.id===currentOccurrenceId)||items[0];
+  if(dateISO===currentDate && (item?.id||null)===currentOccurrenceId)return;
+  selectOccurrence(item,dateISO);
+  document.querySelectorAll('.day-session-pill').forEach(p=>p.classList.toggle('active',p.dataset.occurrenceId===currentOccurrenceId));
+  renderDays();renderBodyweight();
 }
 
 let stripScrollTimer, wheelRAF;
@@ -1347,20 +2140,42 @@ function attachSwipeComplete(wrap, exEl, onComplete, onTimerSwipe){
   });
 }
 
-function exFormHTML(ex){
-  const cat = ex.type==='warmup' ? 'warmup' : ex.type==='prep' ? 'prep' : (ex.intensity==='fondamentale' ? 'fondamentale' : 'normale');
-  const cats = [
+const EXERCISE_CATEGORIES = [
     {v:'warmup', label:'Riscaldamento', color:'#F5D742'},
-    {v:'prep', label:'Preparazione', color:'#F2790A'},
-    {v:'normale', label:'Normale', color:'#E8231A'},
-    {v:'fondamentale', label:'Fondamentale', color:'#6B1414'},
-  ];
+    {v:'fondamentale', label:'Fondamentale', color:'#E8231A'},
+    {v:'mobility', label:'Mobilità', color:'#65C9C0'},
+    {v:'breathing', label:'Respirazione', color:'#89BFFF'},
+    {v:'bodyweight', label:'Corpo libero', color:'#B6D97A'},
+    {v:'posture', label:'Postura', color:'#C7A0EE'},
+    {v:'cardio', label:'Cardio', color:'#F29978'},
+];
+
+function exerciseCategory(ex){
+  const category = typeof ex.category==='string' ? ex.category : ex.type;
+  // Removed labels become an ordinary exercise with no selected tag.
+  if(typeof category==='string') return EXERCISE_CATEGORIES.some(c=>c.v===category) ? category : 'normale';
+  // Older cardio entries used an ID prefix; custom IDs also start with c.
+  if(String(ex.id||'').startsWith('c')&&!String(ex.id).startsWith('custom-')) return 'cardio';
+  return ex.intensity==='fondamentale' ? 'fondamentale' : 'normale';
+}
+
+function exerciseTagHTML(ex){
+  const cat = EXERCISE_CATEGORIES.find(c=>c.v===exerciseCategory(ex));
+  if(!cat || cat.v==='normale') return '';
+  const cls = cat.v==='warmup' ? 'ex-tag-warmprep' : cat.v==='fondamentale' ? 'ex-tag-fond' : 'ex-tag-category';
+  return `<span class="ex-tag ${cls}" style="--cat-color:${cat.color}">${cat.label}</span>`;
+}
+
+function prescribedSetCount(ex){return Number.isInteger(ex.sets)&&ex.sets>0?ex.sets:3;}
+
+function exFormHTML(ex){
+  const cat = exerciseCategory(ex);
   return `
     <label>Nome esercizio</label>
     <input type="text" class="ef-name" value="${(ex.name||'').replace(/"/g,'&quot;')}">
-    <label>Tipo</label>
-    <div class="ef-cat-row">
-      ${cats.map(c=>`<button class="ef-cat-btn${c.v===cat?' active':''}" data-cat="${c.v}" type="button" style="--cat-color:${c.color}">${c.label}</button>`).join('')}
+    <label>Etichetta (facoltativa)</label>
+    <div class="ef-cat-row" role="group" aria-label="Etichetta esercizio">
+      ${EXERCISE_CATEGORIES.map(c=>`<button class="ef-cat-btn${c.v===cat?' active':''}" data-cat="${c.v}" type="button" aria-pressed="${c.v===cat}" style="--cat-color:${c.color}">${c.label}</button>`).join('')}
     </div>
     <label>Recupero (facoltativo)</label>
     <div class="ef-rest-row">
@@ -1380,11 +2195,11 @@ function exFormHTML(ex){
     <label>Serie</label>
     <div class="ef-sets-row">
       <button class="ef-sets-minus" type="button">–</button>
-      <span class="ef-sets-value">${ex.sets||3}</span>
+      <span class="ef-sets-value">${prescribedSetCount(ex)||'Da definire'}</span>
       <button class="ef-sets-plus" type="button">+</button>
     </div>
-    <label>Ripetizioni (es. 8-12)</label>
-    <input type="text" class="ef-reps" value="${(ex.reps||'').replace(/"/g,'&quot;')}">
+    <label>Ripetizioni / durata (es. 12 oppure 40″)</label>
+    <input type="text" class="ef-reps" value="${(ex.reps||(ex.isNewFlag?'12':'')).replace(/"/g,'&quot;')}">
     <label>Sottotitolo (facoltativo)</label>
     <input type="text" class="ef-note" value="${(ex.note||'').replace(/"/g,'&quot;')}">
     ${!ex.isNewFlag ? '<button class="ef-reorder" type="button">↕️ Riordina esercizi</button>' : ''}
@@ -1400,14 +2215,15 @@ async function persistProgramChange(){
 function openExerciseEditor(dayKey, ex, isNew, onSaved){
   const page = document.getElementById('exEditor');
   const body = document.getElementById('exEditorBody');
-  let setsValue = ex.sets || 3;
-  let catValue = ex.type==='warmup' ? 'warmup' : ex.type==='prep' ? 'prep' : (ex.intensity==='fondamentale' ? 'fondamentale' : 'normale');
+  let setsValue = prescribedSetCount(ex);
+  const maxSets=Math.max(10,setsValue);
+  let catValue = exerciseCategory(ex);
   body.innerHTML = exFormHTML({...ex, isNewFlag:isNew});
   page.classList.add('open');
 
   const setsLabel = body.querySelector('.ef-sets-value');
   body.querySelector('.ef-sets-minus').onclick = ()=>{ if(setsValue>1){ setsValue--; setsLabel.textContent = setsValue; } };
-  body.querySelector('.ef-sets-plus').onclick = ()=>{ if(setsValue<10){ setsValue++; setsLabel.textContent = setsValue; } };
+  body.querySelector('.ef-sets-plus').onclick = ()=>{ if(setsValue<maxSets){ setsValue++; setsLabel.textContent = setsValue; } };
 
   const { min: initMin, sec: initSec } = restSecondsToMinSec(ex.rest);
   let restMin = initMin, restSec = initSec;
@@ -1422,8 +2238,12 @@ function openExerciseEditor(dayKey, ex, isNew, onSaved){
 
   body.querySelectorAll('.ef-cat-btn').forEach(btn=>{
     btn.onclick = ()=>{
-      catValue = btn.dataset.cat;
-      body.querySelectorAll('.ef-cat-btn').forEach(b=> b.classList.toggle('active', b===btn));
+      catValue = catValue===btn.dataset.cat ? 'normale' : btn.dataset.cat;
+      body.querySelectorAll('.ef-cat-btn').forEach(b=>{
+        const selected = b.dataset.cat===catValue;
+        b.classList.toggle('active', selected);
+        b.setAttribute('aria-pressed',String(selected));
+      });
     };
   });
 
@@ -1456,18 +2276,19 @@ function openExerciseEditor(dayKey, ex, isNew, onSaved){
     const note = body.querySelector('.ef-note').value.trim();
     if(!name){ return; }
     const day = PROGRAM[dayKey];
-    const typeField = (catValue==='warmup'||catValue==='prep') ? catValue : undefined;
+    const typeField = (catValue!=='normale'&&catValue!=='fondamentale') ? catValue : undefined;
     const intensityField = (catValue==='normale'||catValue==='fondamentale') ? catValue : undefined;
     if(isNew){
-      const newEx = {id:'custom-'+Date.now(), name, note: note||null, rest: rest||null, sets: setsValue, reps: reps||'', weekly:{'1':''}};
+      const newEx = {id:'custom-'+Date.now(), name, category:catValue, note: note||null, rest: rest||null, sets: setsValue||null, reps: reps||'', weekly:{'1':''}};
       if(typeField) newEx.type = typeField; else newEx.intensity = intensityField;
       day.exercises.push(newEx);
     } else {
       const target = day.exercises.find(e=>e.id===ex.id);
       if(target){
         target.name = name;
+        target.category = catValue;
         target.rest = rest||null;
-        target.sets = setsValue;
+        target.sets = setsValue||null;
         target.reps = reps||'';
         target.note = note||null;
         if(typeField){ target.type = typeField; delete target.intensity; }
@@ -1490,6 +2311,8 @@ async function deleteExercise(dayKey, exId){
 }
 
 async function renderDays(){
+  const renderGeneration = ++daysRenderGeneration;
+  const activeOccurrence = selectedOccurrence();
   const el = document.getElementById('days');
   el.innerHTML = '';
   const bwWrap = document.getElementById('bwWrap');
@@ -1499,7 +2322,10 @@ async function renderDays(){
   }
   bwWrap.style.display = 'none';
   if(!currentSession || !PROGRAM[currentSession]){
-    return;
+    const empty=document.createElement('div');empty.className='sequence-empty';
+    empty.textContent='Nessuna sessione per questa giornata.';
+    const add=document.createElement('button');add.type='button';add.className='session-ex-add';add.textContent='＋ Nuova sessione';
+    add.onclick=()=>addSession(currentDate);empty.appendChild(add);el.appendChild(empty);return;
   }
   const dayKeys = [currentSession];
   for(const key of dayKeys){
@@ -1514,27 +2340,31 @@ async function renderDays(){
     `;
     el.appendChild(dayEl);
     const cardEl = dayEl.querySelector('#card-'+key);
+    if(!day.exercises.length){
+      const add=document.createElement('button');add.type='button';add.className='session-ex-add';
+      add.textContent='＋ Aggiungi esercizio';
+      add.onclick=()=>openExerciseEditor(key,{name:'',rest:null,sets:3},true,renderAll);
+      cardEl.appendChild(add);
+    }
     for(const ex of day.exercises){
-      const isCardio = ex.id.startsWith('c');
+      const isCardio = exerciseCategory(ex)==='cardio';
       const isWarmup = ex.type==='warmup';
       const exEl = document.createElement('div');
       exEl.className = 'ex ex-intensity-'+(ex.intensity||'normale');
-      const tagText = ex.type==='warmup' ? 'Riscaldamento' : ex.type==='prep' ? 'Preparazione' : ex.intensity==='fondamentale' ? 'Fondamentale' : '';
-      const tagClass = (ex.type==='warmup'||ex.type==='prep') ? ' ex-tag-warmprep' : (ex.intensity==='fondamentale' ? ' ex-tag-fond' : '');
       exEl.innerHTML = `
         <div class="ex-compact-head">
           <span class="ex-name">${ex.name}</span>
-          ${tagText ? `<span class="ex-tag${tagClass}">${tagText}</span>` : ''}
-          <span class="ex-meta-sets">${ex.sets||3}×${ex.reps||'—'}</span>
+          ${exerciseTagHTML(ex)}
+          <span class="ex-meta-sets">${prescribedSetCount(ex)}×${ex.reps||'—'}</span>
           ${ex.rest ? `<span class="ex-meta-rest">${ex.rest}</span>` : ''}
         </div>
         ${ex.note ? `<p class="ex-note">${ex.note}</p>` : ''}
         <div class="log-row">
-          <input type="text" placeholder="${isCardio?'Distanza':'Carico'}" class="in-carico${isCardio?'':' carico-compact'}"${isWarmup?' disabled':''}>
+          <input type="text" placeholder="${ex.loadLabel||(isCardio?'Distanza':'Carico')}" class="in-carico${isCardio?'':' carico-compact'}"${isWarmup?' disabled':''}>
           ${isCardio ? '<input type="text" placeholder="Tempo fatto" class="in-rep">' : '<div class="reps-boxes"></div>'}
-          <button class="samelast-btn" type="button" title="Come l'ultima volta">↻</button>
           <button class="note-btn" type="button" title="Nota"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 3h9l3 3v11H4z"/><path d="M13 3v3h3"/><path d="M7 9h6M7 12h6M7 15h3"/></svg></button>
         </div>
+        <div class="previous-load" hidden></div>
         <div class="save-hint"></div>
       `;
       const exWrap = document.createElement('div');
@@ -1560,11 +2390,12 @@ async function renderDays(){
       const inRep = isCardio ? exEl.querySelector('.in-rep') : null;
       const noteBtn = exEl.querySelector('.note-btn');
       let noteValue = '';
-      const sameBtn = exEl.querySelector('.samelast-btn');
+      const previousLoadEl = exEl.querySelector('.previous-load');
       const hint = exEl.querySelector('.save-hint');
       const repsBoxesEl = isCardio ? null : exEl.querySelector('.reps-boxes');
 
       const data = await loadHistory(ex.id);
+      if(renderGeneration!==daysRenderGeneration)return;
       let repsState = [];
       let completed = false;
       let prevNoteSeen = false;
@@ -1578,7 +2409,8 @@ async function renderDays(){
           inp.inputMode = 'numeric';
           inp.maxLength = 3;
           inp.value = val || '';
-          inp.placeholder = 'rep';
+          inp.placeholder = ex.trackingUnit==='seconds'?'sec':'rep';
+          inp.setAttribute('aria-label',(ex.trackingUnit==='seconds'?'Secondi':'Ripetizioni')+' · serie '+(i+1));
           if(isWarmup || completed) inp.disabled = true;
           inp.addEventListener('input', ()=>{ repsState[i]=inp.value.trim(); debouncedPersist(); });
           inp.addEventListener('blur', ()=>{ repsState[i]=inp.value.trim(); clearTimeout(saveTimeout); persist(); });
@@ -1586,18 +2418,34 @@ async function renderDays(){
         });
       };
 
-      const findPrevCarico = ()=>{
-        const weeks = Object.keys(data).map(Number).filter(w=>w<currentWeek).sort((a,b)=>b-a);
-        for(const w of weeks){
-          const c = data[String(w)].carico;
-          if(c) return c;
+      const findPreviousPerformance = ()=>{
+        for(const record of previousExerciseRecords(ex.id,data,activeOccurrence)){
+          const entry=record.entry;
+          const load=entry.carico===undefined||entry.carico===null?'':String(entry.carico).trim();
+          const reps=isCardio?[]:(Array.isArray(entry.reps)?entry.reps:splitReps(entry.rep)).map(v=>v===null||v===undefined?'':String(v).trim());
+          const time=isCardio&&entry.rep!==undefined&&entry.rep!==null?String(entry.rep).trim():'';
+          if(load||reps.some(v=>v!=='')||time){
+            return {label:record.legacy?'S'+record.week:new Date(record.date+'T12:00:00').toLocaleDateString('it-IT',{day:'numeric',month:'short'}),load,reps,time};
+          }
         }
         return null;
       };
+      const showPreviousPerformance = ()=>{
+        const previous = isWarmup ? null : findPreviousPerformance();
+        previousLoadEl.hidden = !previous;
+        if(!previous){ previousLoadEl.textContent = ''; return; }
+        const details = [];
+        if(previous.load) details.push(`${ex.loadLabel?ex.loadLabel.toLowerCase():(isCardio ? 'distanza' : 'carico')} ${previous.load}`);
+        if(previous.reps.some(value=>value!=='')){
+          details.push((ex.trackingUnit==='seconds'?'sec ':'rep ') + previous.reps.map(value=>value==='' ? '–' : value).join(' / '));
+        }
+        if(previous.time) details.push('tempo ' + previous.time);
+        previousLoadEl.textContent = `Precedente · ${previous.label}: ${details.join(' · ')}`;
+      };
 
       const prevNoteFor = (wk)=>{
-        const prevData = data[String(wk-1)];
-        return prevData && prevData.note ? prevData.note : '';
+        const prevData = previousExerciseRecords(ex.id,data,activeOccurrence)[0]?.entry;
+        return prevData?.note || '';
       };
       const updateNoteBtn = ()=>{
         const prevNote = prevNoteFor(currentWeek);
@@ -1607,10 +2455,10 @@ async function renderDays(){
       };
 
       const fillFields = ()=>{
-        const wk = data[String(currentWeek)] || {};
+        const wk = exerciseRecordFor(ex.id,data,activeOccurrence);
         inCarico.value = wk.carico || '';
-        const prevCarico = findPrevCarico();
-        inCarico.placeholder = (!inCarico.value && prevCarico) ? prevCarico : (isCardio?'Distanza':'Carico');
+        inCarico.placeholder = ex.loadLabel||(isCardio ? 'Distanza' : 'Carico');
+        showPreviousPerformance();
         noteValue = wk.note || '';
         prevNoteSeen = !!wk.prevNoteSeen;
         updateNoteBtn();
@@ -1622,30 +2470,12 @@ async function renderDays(){
           inRep.disabled = isWarmup || completed;
         } else {
           const saved = Array.isArray(wk.reps) ? wk.reps.slice() : splitReps(wk.rep);
-          const target = saved.length ? saved.length : (ex.sets||3);
+          const target = saved.length ? saved.length : prescribedSetCount(ex);
           repsState = Array.from({length:target}, (_,i)=> saved[i] || '');
           buildRepsBoxes();
         }
       };
       fillFields();
-
-      const updateSameBtn = ()=>{
-        const earlier = Object.keys(data).map(Number).filter(w=>w<currentWeek).sort((a,b)=>b-a);
-        if(earlier.length===0){ sameBtn.style.display='none'; return; }
-        sameBtn.style.display='flex';
-        sameBtn.onclick = ()=>{
-          const src = data[String(earlier[0])];
-          if(src.carico) inCarico.value = src.carico;
-          if(isCardio){
-            if(src.rep) inRep.value = src.rep;
-          } else {
-            const srcReps = Array.isArray(src.reps) ? src.reps : splitReps(src.rep);
-            if(srcReps.length){ repsState = srcReps.slice(); buildRepsBoxes(); }
-          }
-          persist();
-        };
-      };
-      updateSameBtn();
 
       let saveTimeout;
       const persist = async ()=>{
@@ -1661,11 +2491,22 @@ async function renderDays(){
           empty = !carico && !reps.some(v=>v!=='') && !note && !completed && !prevNoteSeen;
           payload = {carico, reps, note, completed, prevNoteSeen, date: todayISO()};
         }
-        if(empty){ delete data[String(currentWeek)]; } else { data[String(currentWeek)] = payload; }
+        if(empty){
+          const legacy=exerciseRecords(ex.id,data).some(r=>r.legacy&&r.id===activeOccurrence.id);
+          if(legacy)data[activeOccurrence.id]={cleared:true,sessionDate:activeOccurrence.date,sessionKey:key};
+          else delete data[activeOccurrence.id];
+        } else {
+          data[activeOccurrence.id]={...payload,sessionDate:activeOccurrence.date,sourceDate:activeOccurrence.sourceDate,sessionKey:key};
+        }
         const ok = await saveHistory(ex.id, data);
-        updateSameBtn();
+        let scheduleOk=true;
+        if(ok){
+          if(!empty)RECORDED_OCCURRENCES[activeOccurrence.id]={...activeOccurrence,locked:activeOccurrence.date<todayISO()||await isOccurrenceDone(activeOccurrence)};
+          scheduleOk=await saveScheduleConfig();
+        }
+        showPreviousPerformance();
         updateDayMeta();
-        if(!ok){
+        if(!ok || !scheduleOk){
           hint.textContent = '⚠ non salvato';
           hint.classList.add('err','show');
           clearTimeout(hint._t);
@@ -1727,7 +2568,8 @@ async function renderDays(){
         const data = await loadHistory(ex.id);
         Object.values(data).forEach(e=>{ if(e.date && (!latest || e.date>latest)) latest = e.date; });
       }
-      document.getElementById('meta-'+key).textContent = '';
+      const meta=document.getElementById('meta-'+key);
+      if(meta)meta.textContent = '';
     };
     updateDayMeta();
   }
@@ -1795,10 +2637,11 @@ function shortLabel(title){
   return title;
 }
 
-function attachLongPress(el, onLongPress){
+function attachLongPress(el, onLongPress, shouldStart = ()=>true){
   const DURATION = 500;
   let timer=null, startX=0, startY=0, fired=false;
   const start = (x,y)=>{
+    clearTimeout(timer);
     fired=false; startX=x; startY=y;
     timer = setTimeout(()=>{ fired=true; onLongPress(); }, DURATION);
   };
@@ -1806,18 +2649,22 @@ function attachLongPress(el, onLongPress){
     if(Math.abs(x-startX)>10 || Math.abs(y-startY)>10) clearTimeout(timer);
   };
   const end = ()=>{ clearTimeout(timer); };
-  el.addEventListener('touchstart', e=>{ const t=e.touches[0]; start(t.clientX,t.clientY); }, {passive:true});
+  el.addEventListener('touchstart', e=>{ if(!shouldStart(e)) return; const t=e.touches[0]; start(t.clientX,t.clientY); }, {passive:true});
   el.addEventListener('touchmove', e=>{ const t=e.touches[0]; move(t.clientX,t.clientY); }, {passive:true});
   el.addEventListener('touchend', end);
-  el.addEventListener('mousedown', e=> start(e.clientX,e.clientY));
+  el.addEventListener('touchcancel', end);
+  el.addEventListener('mousedown', e=>{ if(e.button===0 && shouldStart(e)) start(e.clientX,e.clientY); });
+  el.addEventListener('mouseleave', end);
   el.addEventListener('mousemove', e=> move(e.clientX,e.clientY));
   el.addEventListener('mouseup', end);
   el.addEventListener('click', e=>{ if(fired){ e.preventDefault(); e.stopPropagation(); fired=false; } }, true);
 }
 
-function attachPillLongPressDrag(pill, key, week, dateISO){
+function attachPillLongPressDrag(pill, key, week, dateISO, item = null){
+  item = item || occurrencesForDate(dateISO).find(o=>o.key===key) || occurrence(key,dateISO);
   const LONG_PRESS_MS = 450;
   let timer=null, startX=0, startY=0, primed=false, dragging=false;
+  let suppressClick=false, lastTouchAt=0;
 
   const cancelTimer = ()=>{ if(timer){ clearTimeout(timer); timer=null; } };
 
@@ -1848,7 +2695,12 @@ function attachPillLongPressDrag(pill, key, week, dateISO){
   };
   const onEnd = async (x,y)=>{
     cancelTimer();
-    if(dragging){
+    const wasDragging = dragging;
+    const wasPrimed = primed;
+    suppressClick = wasDragging || wasPrimed;
+    dragging = false;
+    primed = false;
+    if(wasDragging){
       pill.classList.remove('dragging-pill');
       pill.style.transform = '';
       const cell = Array.from(document.querySelectorAll('.day-cell')).find(c=>{
@@ -1857,20 +2709,7 @@ function attachPillLongPressDrag(pill, key, week, dateISO){
       });
       updateWheelVisual();
       if(cell && cell.dataset.date){
-        const isDifferentDay = cell.dataset.date!==dateISO;
-        let proceed = true;
-        if(isDifferentDay){
-          const targetWeek = weekForDate(cell.dataset.date);
-          if(targetWeek===week){
-            const targetWIdx = weekdayIndexOf(cell.dataset.date);
-            if(!SESSION_DAY_OVERRIDES[String(week)]) SESSION_DAY_OVERRIDES[String(week)] = {};
-            SESSION_DAY_OVERRIDES[String(week)][key] = targetWIdx;
-            await saveDayOverrides();
-          } else {
-            setDataMsg('⚠ puoi spostare solo dentro la stessa settimana', true);
-            proceed = false;
-          }
-        }
+        const proceed = await moveCalendarOccurrence(item,cell.dataset.date);
         if(proceed){
           const siblingPills = Array.from(cell.querySelectorAll('.day-session-pill')).filter(p=> p.dataset.sessionKey!==key);
           if(siblingPills.length){
@@ -1884,20 +2723,67 @@ function attachPillLongPressDrag(pill, key, week, dateISO){
             SESSION_ORDER.splice(insertIdx<0?SESSION_ORDER.length:insertIdx, 0, key);
             await saveSessionOrder();
           }
-          currentWeek = week; currentSession = key;
-          renderAllAndCenter();
+          renderAll();scrollStripTo(currentDate,true);
         }
       }
-    } else if(primed){
+    } else if(wasPrimed){
       pill.classList.remove('lifted');
-      openMiniAction(key, week, dateISO);
+      openMiniAction(key, week, dateISO, item);
     }
     pill.classList.remove('lifted');
   };
 
-  pill.addEventListener('touchstart', e=>{ const t=e.touches[0]; onStart(t.clientX,t.clientY); }, {passive:true});
+  const cancelGesture = ()=>{
+    cancelTimer();
+    suppressClick = primed || dragging;
+    primed = false;
+    dragging = false;
+    pill.classList.remove('lifted', 'dragging-pill');
+    pill.style.transform = '';
+    updateWheelVisual();
+  };
+  pill.addEventListener('click', e=>{
+    if(!suppressClick) return;
+    suppressClick = false;
+    e.preventDefault();
+    e.stopPropagation();
+  }, true);
+  pill.addEventListener('dragstart', e=>e.preventDefault());
+  pill.addEventListener('touchstart', e=>{
+    lastTouchAt = Date.now();
+    const t=e.touches[0];
+    onStart(t.clientX,t.clientY);
+  }, {passive:true});
   pill.addEventListener('touchmove', e=>{ const t=e.touches[0]; onMove(t.clientX,t.clientY,e); }, {passive:false});
-  pill.addEventListener('touchend', e=>{ const t=e.changedTouches[0]; onEnd(t.clientX,t.clientY); });
+  pill.addEventListener('touchend', e=>{
+    lastTouchAt = Date.now();
+    const t=e.changedTouches[0];
+    onEnd(t.clientX,t.clientY);
+  });
+  pill.addEventListener('touchcancel', cancelGesture);
+  pill.addEventListener('mousedown', e=>{
+    if(e.button!==0 || Date.now()-lastTouchAt<800) return;
+    e.preventDefault();
+    onStart(e.clientX,e.clientY);
+    const cleanup = ()=>{
+      document.removeEventListener('mousemove', moveMouse);
+      document.removeEventListener('mouseup', endMouse);
+      window.removeEventListener('blur', cancelMouse);
+    };
+    const moveMouse = event=>{
+      if(event.buttons===0){ cleanup(); cancelGesture(); return; }
+      onMove(event.clientX,event.clientY,event);
+    };
+    const endMouse = event=>{
+      if(event.button!==0) return;
+      cleanup();
+      onEnd(event.clientX,event.clientY);
+    };
+    const cancelMouse = ()=>{ cleanup(); cancelGesture(); };
+    document.addEventListener('mousemove', moveMouse);
+    document.addEventListener('mouseup', endMouse);
+    window.addEventListener('blur', cancelMouse);
+  });
 }
 
 function openTwoActionMenu(actions){
@@ -1919,11 +2805,13 @@ function openTwoActionMenu(actions){
   if(navigator.vibrate) navigator.vibrate(10);
 }
 
-function openMiniAction(key, week, dateISO){
+function openMiniAction(key, week, dateISO, item = null){
+  item=item||occurrencesForDate(dateISO).find(o=>o.key===key)||occurrence(key,dateISO);
   openTwoActionMenu([
-    {label:'✏️ Modifica', onClick:()=> openRenameDay(key)},
-    {label:'🗑️ Elimina', danger:true, onClick:()=> deleteSession(key)},
-    {label:'+ Nuova sessione', onClick:()=> addSession()},
+    {label:'✏️ Modifica',onClick:()=>openRenameDay(key)},
+    {label:isFixedSession(key)?'⏭ Salta senza recupero':'⏭ Salta questa giornata',onClick:()=>postponeProgramme(item)},
+    {label:'🗑️ Elimina scheda',danger:true,onClick:()=>deleteSession(key)},
+    {label:'+ Nuova sessione',onClick:()=>addSession(dateISO)},
   ]);
 }
 
@@ -1940,41 +2828,7 @@ function openExerciseMiniAction(dayKey, ex, onSaved){
 }
 
 function openRenameDay(key){
-  const overlay = document.getElementById('renameDayOverlay');
-  const modal = document.getElementById('renameDayModal');
-  const input = document.getElementById('renameDayInput');
-  const picker = document.getElementById('renameDayPicker');
-  const saveBtn = document.getElementById('renameDaySave');
-  const cancelBtn = document.getElementById('renameDayCancel');
-  const DOW = ['Lun','Mar','Mer','Gio','Ven','Sab','Dom'];
-  let dayValue = PROGRAM[key].defaultDay!==undefined ? PROGRAM[key].defaultDay : 0;
-  input.value = PROGRAM[key].title;
-  picker.innerHTML = '';
-  DOW.forEach((label,i)=>{
-    const btn = document.createElement('button');
-    btn.className = 'ef-cat-btn'+(i===dayValue?' active':'');
-    btn.type = 'button';
-    btn.textContent = label;
-    btn.onclick = ()=>{
-      dayValue = i;
-      picker.querySelectorAll('.ef-cat-btn').forEach((b,bi)=> b.classList.toggle('active', bi===i));
-    };
-    picker.appendChild(btn);
-  });
-  overlay.classList.add('open');
-  modal.classList.add('open');
-  const close = ()=>{ overlay.classList.remove('open'); modal.classList.remove('open'); saveBtn.onclick=null; cancelBtn.onclick=null; overlay.onclick=null; };
-  saveBtn.onclick = async ()=>{
-    const name = input.value.trim();
-    if(name) PROGRAM[key].title = name;
-    PROGRAM[key].defaultDay = dayValue;
-    await saveProgramOverride();
-    close();
-    currentSession = key;
-    renderAllAndCenter();
-  };
-  cancelBtn.onclick = close;
-  overlay.onclick = close;
+  openSessionDetails(key,currentDate);
 }
 
 function renderAll(){
@@ -1985,8 +2839,8 @@ function renderAll(){
 
 function allIds(){
   const ids = ['bodyweight'];
-  Object.values(PROGRAM).forEach(day=> day.exercises.forEach(ex=> ids.push(ex.id)));
-  return ids;
+  Object.values(PROGRAM).forEach(day=> [...day.exercises,...(day.archivedExercises||[])].forEach(ex=> ids.push(ex.id)));
+  return [...new Set(ids)];
 }
 
 function exerciseNameById(id){
@@ -2006,7 +2860,7 @@ function setDataMsg(text, isErr){
 }
 
 async function exportData(){
-  const out = {app:'diario-allenamento-mattia', version:1, exported: new Date().toISOString(), data:{}};
+  const out = {app:'diario-allenamento-mattia',version:3,exported:new Date().toISOString(),program:PROGRAM,sessionOrder:SESSION_ORDER,dayOverrides:SESSION_DAY_OVERRIDES,schedule:{sequence:SEQUENCE,moves:OCCURRENCE_MOVES,recorded:RECORDED_OCCURRENCES,repeatEditorVersion:REPEAT_EDITOR_VERSION,fixedWeeklyVersion:FIXED_WEEKLY_VERSION,deferrals:SCHEDULE_DEFERRALS,moveBaselines:OCCURRENCE_MOVE_BASELINES},data:{}};
   for(const id of allIds()){
     const d = await loadHistory(id);
     if(Object.keys(d).length) out.data[id] = d;
@@ -2032,6 +2886,13 @@ async function importData(file){
     const parsed = JSON.parse(text);
     const payload = parsed && parsed.data && typeof parsed.data==='object' ? parsed.data : parsed;
     if(!payload || typeof payload!=='object') throw new Error('formato non valido');
+    if(parsed.version>=2 && parsed.program && typeof parsed.program==='object'){
+      if(!Array.isArray(parsed.sessionOrder)||parsed.sessionOrder.some(k=>!parsed.program[k]||!Array.isArray(parsed.program[k].exercises)))throw new Error('schede non valide');
+      PROGRAM=parsed.program;SESSION_ORDER=parsed.sessionOrder;
+      SESSION_DAY_OVERRIDES=parsed.dayOverrides||{};
+      SEQUENCE=cleanSequence(parsed.schedule?.sequence);OCCURRENCE_MOVES=parsed.schedule?.moves||{};RECORDED_OCCURRENCES=parsed.schedule?.recorded||{};REPEAT_EDITOR_VERSION=Number(parsed.schedule?.repeatEditorVersion)||0;FIXED_WEEKLY_VERSION=Number(parsed.schedule?.fixedWeeklyVersion)||0;SCHEDULE_DEFERRALS=parsed.schedule?.deferrals||[];OCCURRENCE_MOVE_BASELINES=parsed.schedule?.moveBaselines||{};
+      await saveProgramOverride();await saveSessionOrder();await saveDayOverrides();await saveScheduleConfig();
+    }
     let count = 0;
     for(const [id, d] of Object.entries(payload)){
       if(d && typeof d==='object'){
@@ -2040,6 +2901,9 @@ async function importData(file){
       }
     }
     historyCache = {};
+    await indexRecordedOccurrences();
+    if(parsed.version>=2){await ensureRepeatEditorPreset();await ensureFixedWeeklyPreset();await ensurePPLWorkoutPreset();await ensureComplementaryRoutines();}
+    selectOccurrence(occurrencesForDate(currentDate)[0],currentDate);
     renderAll();
     setDataMsg('✓ importati dati di '+count+' voci');
   }catch(e){
@@ -2186,7 +3050,11 @@ async function deleteSession(key){
   if(SESSION_ORDER.length<=1){ setDataMsg('⚠ deve restare almeno una sessione', true); return; }
   if(!await confirmDialog(`Eliminare "${PROGRAM[key].title}"? Gli esercizi al suo interno non saranno più visibili (lo storico registrato resta salvato).`)) return;
   SESSION_ORDER = SESSION_ORDER.filter(k=>k!==key);
+  SEQUENCE.steps=SEQUENCE.steps.filter(step=>step.key!==key);
+  if(!SEQUENCE.steps.length)SEQUENCE.enabled=false;
+  await saveScheduleConfig();
   await saveSessionOrder();
+  selectOccurrence(occurrencesForDate(currentDate)[0],currentDate);
   renderAll();
 }
 
@@ -2262,7 +3130,7 @@ function renderSessionModalExList(key){
     if(isReordering){
       row.innerHTML = `<div class="session-ex-row-inner">
         <span class="session-ex-drag-handle">☰</span>
-        <span class="session-ex-name">${ex.name}</span>
+        <span class="session-ex-name">${ex.name}${exerciseTagHTML(ex)}</span>
       </div>`;
     } else {
       row.innerHTML = `<div class="session-ex-row-inner">
@@ -2270,7 +3138,7 @@ function renderSessionModalExList(key){
           <button class="session-ex-move" type="button"${idx===0?' disabled':''}>▲</button>
           <button class="session-ex-move" type="button"${idx===exercises.length-1?' disabled':''}>▼</button>
         </div>
-        <span class="session-ex-name">${ex.name}</span>
+        <span class="session-ex-name">${ex.name}${exerciseTagHTML(ex)}</span>
       </div>`;
     }
     const wrap = document.createElement('div');
@@ -2316,13 +3184,7 @@ function renderSessionModalExList(key){
 function openSessionModal(key){
   const titleBtn = document.getElementById('sessionModalTitle');
   titleBtn.textContent = PROGRAM[key].title;
-  titleBtn.onclick = async ()=>{
-    const name = await promptName('Rinomina sessione', PROGRAM[key].title);
-    if(!name) return;
-    PROGRAM[key].title = name;
-    await saveProgramOverride();
-    titleBtn.textContent = name;
-  };
+  titleBtn.onclick=()=>openSessionDetails(key,currentDate);
   renderSessionModalExList(key);
   document.getElementById('sessionModal').classList.add('open');
 }
@@ -2332,63 +3194,8 @@ function closeSessionModal(){
   renderAll();
 }
 
-function addSession(){
-  if(document.activeElement && document.activeElement.blur) document.activeElement.blur();
-  const overlay = document.getElementById('newSessionOverlay');
-  const modal = document.getElementById('newSessionModal');
-  const nameInput = document.getElementById('newSessionName');
-  const repeatRow = document.getElementById('newSessionRepeatRow');
-  const dayRow = document.getElementById('newSessionDayRow');
-  const saveBtn = document.getElementById('newSessionSave');
-  const cancelBtn = document.getElementById('newSessionCancel');
-
-  nameInput.value = '';
-  nameInput.readOnly = true;
-  let repeatValue = null;
-  let dayValue = null;
-  repeatRow.querySelectorAll('.ef-cat-btn').forEach(b=> b.classList.remove('active'));
-  dayRow.querySelectorAll('.ef-cat-btn').forEach(b=> b.classList.remove('active'));
-  dayRow.classList.remove('show');
-
-  const close = ()=>{ overlay.classList.remove('open'); modal.classList.remove('open'); };
-
-  repeatRow.querySelectorAll('.ef-cat-btn').forEach(btn=>{
-    btn.onclick = ()=>{
-      repeatRow.querySelectorAll('.ef-cat-btn').forEach(b=> b.classList.remove('active'));
-      btn.classList.add('active');
-      repeatValue = btn.dataset.repeat==='1';
-      dayRow.classList.add('show');
-    };
-  });
-  dayRow.querySelectorAll('.ef-cat-btn').forEach(btn=>{
-    btn.onclick = ()=>{
-      dayRow.querySelectorAll('.ef-cat-btn').forEach(b=> b.classList.remove('active'));
-      btn.classList.add('active');
-      dayValue = parseInt(btn.dataset.day, 10);
-    };
-  });
-
-  saveBtn.onclick = async ()=>{
-    const name = nameInput.value.trim();
-    if(!name || repeatValue===null || dayValue===null) return;
-    const key = 'S'+Date.now();
-    PROGRAM[key] = {title: name, exercises: [], defaultDay: repeatValue ? dayValue : null};
-    SESSION_ORDER.push(key);
-    if(!repeatValue){
-      if(!SESSION_DAY_OVERRIDES[String(currentWeek)]) SESSION_DAY_OVERRIDES[String(currentWeek)] = {};
-      SESSION_DAY_OVERRIDES[String(currentWeek)][key] = dayValue;
-      await saveDayOverrides();
-    }
-    await saveProgramOverride();
-    await saveSessionOrder();
-    close();
-    renderAll();
-  };
-  cancelBtn.onclick = close;
-  overlay.onclick = close;
-
-  overlay.classList.add('open');
-  modal.classList.add('open');
+function addSession(dateISO = null){
+  openSessionDetails(null,dateISO);
 }
 
 function bindHeaderButtons(){
@@ -2405,6 +3212,9 @@ function bindHeaderButtons(){
   document.getElementById('drawerClose').onclick = closeDrawer;
   overlay.onclick = closeDrawer;
   document.getElementById('guideBtn').onclick = ()=>{ closeDrawer(); openOnboarding(); };
+  document.getElementById('importBtn').onclick=()=>document.getElementById('importFile').click();
+  document.getElementById('importFile').onchange=async event=>{const file=event.target.files[0];if(file)await importData(file);event.target.value='';};
+  bindSessionDetails();
 }
 
 async function checkWeightReminder(){
@@ -2463,7 +3273,7 @@ const ONBOARD_SLIDES = [
     </svg>`
   },
   {
-    icon:'✋', title:'Gestisci le sessioni', text:'<b>Tieni premuta</b> una sessione per rinominarla o eliminarla. <b>Trascinala</b> su un altro giorno per spostarla, solo per quella settimana.',
+    icon:'✋', title:'Gestisci le sessioni', text:'<b>Tieni premuta la data</b>, anche di un giorno vuoto, per aggiungere una sessione. Tieni premuta una sessione per rinominarla o eliminarla. <b>Trascinala</b> su un altro giorno per spostarla, solo per quella settimana. Sul PC tieni premuto il tasto sinistro del mouse prima di trascinare.',
     svg:`<svg viewBox="0 0 280 140" fill="none" xmlns="http://www.w3.org/2000/svg">
       <rect x="28" y="16" width="70" height="70" rx="13" fill="#1E2025" stroke="#2A2C33"/>
       <rect x="38" y="60" width="50" height="18" rx="9" fill="#26282E" stroke="#2A2C33"/>
@@ -2504,6 +3314,8 @@ const ONBOARD_SLIDES = [
       <text x="205" y="118" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" fill="#C9713D">🗑️ Elimina</text>
     </svg>`
   },
+  {icon:'🔁',title:'Ripetizione',text:'Quando crei o modifichi una sessione trovi <b>Ripetizione</b>: Mai, Ogni giorno, Ogni settimana, Ogni 2 settimane o Personalizzata. Nella personalizzata scegli i giorni e l’intervallo. I giorni non selezionati non vengono contati.'},
+  {icon:'⏭',title:'Recupera un allenamento',text:'Dal menù della sessione, <b>Salta questa giornata</b> rinvia l’allenamento e tutte le sessioni successive al prossimo giorno disponibile. Per annullare, tieni premuta la data saltata e scegli <b>Annulla rinvio</b>.'},
   {icon:'🚀', title:'Pronto', text:'Tutto qui. Buon allenamento — puoi riaprire questa guida in qualsiasi momento dal menù ☰.'},
 ];
 
@@ -2558,12 +3370,18 @@ async function boot(){
   await loadProgramOverride();
   await loadSessionOrder();
   await loadDayOverrides();
+  await loadScheduleConfig();
   backfillDefaultDays();
+  await indexRecordedOccurrences();
+  await ensureRepeatEditorPreset();
+  await ensureFixedWeeklyPreset();
+  await ensurePPLWorkoutPreset();
+  await ensureComplementaryRoutines();
+  selectOccurrence(occurrencesForDate(currentDate)[0],currentDate);
   bindHeaderButtons();
   bindWeekNav();
   bindStripScroll();
   unlockOnRealTouch(document.getElementById('namePromptInput'));
-  unlockOnRealTouch(document.getElementById('newSessionName'));
   renderAll();
   setTimeout(()=> scrollStripTo(todayISO(), false), 0);
   checkWeightReminder();
